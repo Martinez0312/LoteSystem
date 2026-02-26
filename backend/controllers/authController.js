@@ -1,7 +1,7 @@
 // backend/controllers/authController.js
 // Controlador de autenticación: registro, login, logout, recuperación
 
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { pool } = require('../config/database');
@@ -67,9 +67,12 @@ const login = async (req, res) => {
         const user = users[0];
 
         // Verificar contraseña con bcrypt
-        const passwordValid = await bcrypt.compare(password, user.password_hash);
-        if (!passwordValid) {
-            return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+        // const passwordValid = await bcrypt.compare(password, user.password_hash);
+        //if (!passwordValid) {
+            //return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+        //}
+        if (password !== user.password_hash) {
+          return res.status(401).json({ message: "Contraseña incorrecta" });
         }
 
         // Generar token JWT
