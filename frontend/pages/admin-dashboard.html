@@ -6,6 +6,15 @@
     <title>Panel Admin | LoteSystem</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- api.js en HEAD: Auth/API/UI/logout disponibles antes de parsear el body -->
+    <script src="../js/api.js"></script>
+    <script>
+        (function(){
+            if (!localStorage.getItem('token')) { window.location.href = '/pages/login.html'; }
+            var u = localStorage.getItem('user');
+            if (u && JSON.parse(u).rol !== 'Administrador') { window.location.href = '/pages/dashboard.html'; }
+        })();
+    </script>
 </head>
 <body>
 <nav class="navbar">
@@ -246,30 +255,30 @@
     </div>
 </div>
 
-<script src="../js/api.js"></script>
 <script>
-    Auth.requireAdmin();
+    // Inicializar datos del usuario
     document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-CO', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    
-    const user = Auth.getUser();
-    if (user) document.getElementById('sidebar-name').textContent = `${user.nombre} ${user.apellido}`;
+    const _u = Auth.getUser();
+    if (_u) document.getElementById('sidebar-name').textContent = `${_u.nombre} ${_u.apellido}`;
 
     document.getElementById('hamburger').addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('open');
         document.getElementById('sidebar-overlay').classList.toggle('active');
     });
-    function closeSidebar() {
+
+    // ✅ window.* — accesibles desde onclick="" en el HTML
+    window.closeSidebar = function() {
         document.getElementById('sidebar').classList.remove('open');
         document.getElementById('sidebar-overlay').classList.remove('active');
-    }
+    };
 
-    function showSection(name) {
+    window.showSection = function(name) {
         document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
         document.getElementById('section-' + name).style.display = 'block';
         closeSidebar();
         const loaders = { dashboard: loadDashboard, lots: loadLots, users: loadUsers, purchases: loadPurchases, payments: loadAllPayments, pqrs: loadAllPQRS, stages: loadStages };
         if (loaders[name]) loaders[name]();
-    }
+    };
 
     async function loadDashboard() {
         try {
@@ -337,7 +346,7 @@
         } catch (e) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error al cargar</td></tr>'; }
     }
 
-    function openLotModal(lot = null) {
+    window.openLotModal = function(lot = null) {
         document.getElementById('lot-id').value = '';
         document.getElementById('lot-form').reset();
         document.getElementById('lot-modal-title').innerHTML = '<i class="fas fa-plus"></i> Nuevo Lote';
@@ -356,11 +365,11 @@
         UI.openModal('modal-lot');
     }
 
-    async function editLot(id) {
+    window.editLot = async function(id) {
         try { const res = await API.lots.getById(id); openLotModal(res.data); } catch (e) {}
-    }
+    };
 
-    async function saveLot() {
+    window.saveLot = async function() {
         const id = document.getElementById('lot-id').value;
         const data = {
             codigo: document.getElementById('lot-codigo').value,
@@ -384,7 +393,7 @@
         } catch (e) { UI.hideLoading(); UI.toast(e.message, 'error'); }
     }
 
-    async function deleteLot(id) {
+    window.deleteLot = async function(id) {
         if (!UI.confirm('¿Eliminar este lote?')) return;
         UI.showLoading();
         try { await API.lots.delete(id); UI.hideLoading(); UI.toast('Lote eliminado', 'success'); loadLots(); }
@@ -412,7 +421,7 @@
         } catch (e) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error</td></tr>'; }
     }
 
-    async function toggleUser(id) {
+    window.toggleUser = async function(id) {
         if (!UI.confirm('¿Cambiar estado del usuario?')) return;
         UI.showLoading();
         try { const r = await API.users.toggle(id); UI.hideLoading(); UI.toast(r.message, 'success'); loadUsers(); }
@@ -455,7 +464,7 @@
         } catch (e) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:red;">Error</td></tr>'; }
     }
 
-    async function loadAllPQRS() {
+    window.loadAllPQRS = async function() {
         const tbody = document.getElementById('pqrs-table-body');
         const estado = document.getElementById('pqrs-filter-estado')?.value || '';
         const tipo = document.getElementById('pqrs-filter-tipo')?.value || '';
@@ -473,7 +482,7 @@
         } catch (e) {}
     }
 
-    function openPQRSModal(p) {
+    window.openPQRSModal = function(p) {
         document.getElementById('pqrs-id').value = p.id;
         document.getElementById('pqrs-estado-select').value = p.estado;
         document.getElementById('pqrs-respuesta').value = p.respuesta || '';
@@ -487,7 +496,7 @@
         UI.openModal('modal-pqrs');
     }
 
-    async function savePQRS() {
+    window.savePQRS = async function() {
         const id = document.getElementById('pqrs-id').value;
         UI.showLoading();
         try {
@@ -520,13 +529,13 @@
         } catch (e) {}
     }
 
-    function openStageModal() {
+    window.openStageModal = function() {
         document.getElementById('stage-id').value = '';
         document.getElementById('stage-form').reset();
         UI.openModal('modal-stage');
     }
 
-    function editStage(s) {
+    window.editStage = function(s) {
         document.getElementById('stage-id').value = s.id;
         document.getElementById('stage-nombre').value = s.nombre;
         document.getElementById('stage-descripcion').value = s.descripcion || '';
@@ -536,7 +545,7 @@
         UI.openModal('modal-stage');
     }
 
-    async function saveStage() {
+    window.saveStage = async function() {
         const id = document.getElementById('stage-id').value;
         const data = {
             nombre: document.getElementById('stage-nombre').value,
