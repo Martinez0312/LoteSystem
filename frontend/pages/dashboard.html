@@ -702,28 +702,6 @@
         }
     });
 
-    // ===============================
-    // FUNCIÓN CERRAR SESIÓN (FIX)
-    // ===============================
-    function logout() {
-        try {
-            // Limpiar datos locales
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-
-            // Si usas Auth.js
-            if (typeof Auth !== "undefined" && Auth.logout) {
-                Auth.logout();
-            }
-
-        } catch (e) {
-            console.error("Error cerrando sesión:", e);
-        }
-
-        // Redirigir al login
-        window.location.href = "/pages/login.html";
-    }
-
     // Cargar overview al iniciar
     loadOverview();
 </script>
