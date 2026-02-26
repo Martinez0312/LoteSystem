@@ -110,20 +110,23 @@ app.use((err, req, res, next) => {
 });
 
 // ─── INICIAR SERVIDOR ──────────────────────────────────────────
-const startServer = async () => {
-    await testConnection();
-    await verifyEmailConfig();
+// ─── INICIAR SERVIDOR ──────────────────────────────────────────
+app.listen(PORT, '0.0.0.0', async () => {
+    console.log('');
+    console.log('🏡 ═══════════════════════════════════════════════════');
+    console.log('   SISTEMA DE GESTIÓN DE LOTES DE TERRENO');
+    console.log(`   Servidor corriendo en puerto: ${PORT}`);
+    console.log(`   Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    console.log('═══════════════════════════════════════════════════');
 
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log('');
-        console.log('🏡 ═══════════════════════════════════════════════════');
-        console.log('   SISTEMA DE GESTIÓN DE LOTES DE TERRENO');
-        console.log(`   Servidor corriendo en: http://0.0.0.0:${PORT}`);
-        console.log(`   Ambiente: ${process.env.NODE_ENV || 'development'}`);
-        console.log('═══════════════════════════════════════════════════');
-    });
-};
-
-startServer().catch(console.error);
+    try {
+        await testConnection();
+        await verifyEmailConfig();
+        console.log('✅ Base de datos y email verificados');
+    } catch (error) {
+        console.error('⚠️ Error conectando servicios:', error.message);
+        console.log('⚠️ El servidor sigue corriendo, pero hay servicios no disponibles');
+    }
+});
 
 module.exports = app;
