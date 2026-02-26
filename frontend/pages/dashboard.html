@@ -6,6 +6,36 @@
     <title>Mi Dashboard | LoteSystem</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- ✅ CORRECCIÓN: api.js se carga en el HEAD para que logout(),
+         showSection() y closeSidebar() estén disponibles cuando el
+         navegador parsea los onclick="" del HTML -->
+    <script src="../js/api.js"></script>
+
+    <script>
+        // ── Logout — función global accesible desde cualquier onclick ──
+        window.logout = function () {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/pages/login.html';
+        };
+
+        // ── Protección de ruta: redirigir si no hay sesión ─────────────
+        // Se ejecuta antes de renderizar el body, evita parpadeo
+        (function () {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/pages/login.html';
+            }
+            const u = localStorage.getItem('user');
+            if (u) {
+                const user = JSON.parse(u);
+                if (user.rol === 'Administrador') {
+                    window.location.href = '/pages/admin-dashboard.html';
+                }
+            }
+        })();
+    </script>
 </head>
 <body>
 <!-- NAVBAR -->
@@ -21,7 +51,7 @@
         <a href="/pages/lots.html">Lotes</a>
         <a href="/pages/dashboard.html" class="active">Mi Cuenta</a>
         <a href="/pages/pqrs.html">PQRS</a>
-        <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</a>
+        <a href="#" onclick="logout(); return false;"><i class="fas fa-sign-out-alt"></i> Salir</a>
     </div>
 </nav>
 
@@ -38,13 +68,13 @@
         <nav class="sidebar-nav">
             <div class="sidebar-section-title">Principal</div>
             <div class="sidebar-nav-item">
-                <a href="#" class="active" onclick="showSection('overview')">
+                <a href="#" class="active" onclick="showSection('overview'); return false;">
                     <i class="fas fa-tachometer-alt"></i> Resumen
                 </a>
             </div>
             <div class="sidebar-section-title">Mis Lotes</div>
             <div class="sidebar-nav-item">
-                <a href="#" onclick="showSection('my-lots')">
+                <a href="#" onclick="showSection('my-lots'); return false;">
                     <i class="fas fa-map"></i> Mis Compras
                 </a>
             </div>
@@ -55,34 +85,34 @@
             </div>
             <div class="sidebar-section-title">Pagos</div>
             <div class="sidebar-nav-item">
-                <a href="#" onclick="showSection('make-payment')">
+                <a href="#" onclick="showSection('make-payment'); return false;">
                     <i class="fas fa-credit-card"></i> Registrar Pago
                 </a>
             </div>
             <div class="sidebar-nav-item">
-                <a href="#" onclick="showSection('payment-history')">
+                <a href="#" onclick="showSection('payment-history'); return false;">
                     <i class="fas fa-history"></i> Historial de Pagos
                 </a>
             </div>
             <div class="sidebar-nav-item">
-                <a href="#" onclick="showSection('account-statement')">
+                <a href="#" onclick="showSection('account-statement'); return false;">
                     <i class="fas fa-file-invoice"></i> Estado de Cuenta
                 </a>
             </div>
             <div class="sidebar-section-title">Soporte</div>
             <div class="sidebar-nav-item">
-                <a href="#" onclick="showSection('pqrs')">
+                <a href="#" onclick="showSection('pqrs'); return false;">
                     <i class="fas fa-comments"></i> PQRS
                 </a>
             </div>
             <div class="sidebar-section-title">Cuenta</div>
             <div class="sidebar-nav-item">
-                <a href="#" onclick="showSection('profile')">
+                <a href="#" onclick="showSection('profile'); return false;">
                     <i class="fas fa-user-edit"></i> Mi Perfil
                 </a>
             </div>
             <div class="sidebar-nav-item">
-                <a href="#" onclick="logout()">
+                <a href="#" onclick="logout(); return false;">
                     <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </a>
             </div>
@@ -336,50 +366,63 @@
     </main>
 </div>
 
-<script src="../js/api.js"></script>
 <script>
-    // Verificar autenticación
-    Auth.requireAuth();
-    
-    const user = Auth.getUser();
-    if (user) {
-        document.getElementById('welcome-name').textContent = user.nombre;
-        document.getElementById('sidebar-name').textContent = `${user.nombre} ${user.apellido}`;
-        document.getElementById('sidebar-avatar').textContent = user.nombre[0].toUpperCase();
+    // ── Inicializar datos del usuario en el DOM ─────────────────
+    const _user = Auth.getUser();
+    if (_user) {
+        document.getElementById('welcome-name').textContent  = _user.nombre;
+        document.getElementById('sidebar-name').textContent  = `${_user.nombre} ${_user.apellido}`;
+        document.getElementById('sidebar-avatar').textContent = _user.nombre[0].toUpperCase();
     }
 
-    // Redirigir admins
-    if (Auth.isAdmin()) window.location.href = '/pages/admin-dashboard.html';
-
-    // Hamburger sidebar
+    // ── Hamburger sidebar ──────────────────────────────────────
     document.getElementById('hamburger').addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('open');
         document.getElementById('sidebar-overlay').classList.toggle('active');
     });
-    function closeSidebar() {
+
+    // ✅ window.closeSidebar — accesible desde onclick en el HTML
+    window.closeSidebar = function () {
         document.getElementById('sidebar').classList.remove('open');
         document.getElementById('sidebar-overlay').classList.remove('active');
-    }
+    };
 
-    // Mostrar secciones
-    function showSection(name) {
+    // ✅ window.showSection — accesible desde onclick en el HTML
+    window.showSection = function (name) {
+        // Ocultar todas las secciones
         document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
-        document.getElementById(`section-${name}`).style.display = 'block';
+
+        // Mostrar la sección seleccionada
+        const target = document.getElementById(`section-${name}`);
+        if (target) target.style.display = 'block';
+
+        // Actualizar estado activo en sidebar
         document.querySelectorAll('.sidebar-nav-item a').forEach(a => a.classList.remove('active'));
+
         closeSidebar();
-        
-        // Cargar datos según sección
+
+        // Cargar datos según la sección
         const loaders = {
-            'overview': loadOverview,
-            'my-lots': loadMyLots,
-            'make-payment': loadPaymentForm,
-            'payment-history': loadPaymentHistory,
+            'overview':          loadOverview,
+            'my-lots':           loadMyLots,
+            'make-payment':      loadPaymentForm,
+            'payment-history':   loadPaymentHistory,
             'account-statement': loadAccountStatement,
-            'pqrs': loadPQRS,
-            'profile': loadProfile,
+            'pqrs':              loadPQRS,
+            'profile':           loadProfile,
         };
         if (loaders[name]) loaders[name]();
-    }
+    };
+
+    // ✅ window.quickPay — llamado desde botones generados dinámicamente
+    window.quickPay = function (compraId, monto, codigo) {
+        showSection('make-payment');
+        setTimeout(() => {
+            const sel = document.getElementById('pay-compra-id');
+            sel.value = compraId;
+            sel.dispatchEvent(new Event('change'));
+        }, 300);
+    };
 
     // ── Cargar resumen ─────────────────────────────────────────
     async function loadOverview() {
@@ -391,10 +434,9 @@
             const r = acct.data.resumen;
             document.getElementById('stat-compras').textContent = r.num_compras || 0;
             document.getElementById('stat-pagados').textContent = payments.data.length || 0;
-            document.getElementById('stat-pagado').textContent = UI.currency(r.pagado_total || 0);
-            document.getElementById('stat-saldo').textContent = UI.currency(r.saldo_total || 0);
+            document.getElementById('stat-pagado').textContent  = UI.currency(r.pagado_total || 0);
+            document.getElementById('stat-saldo').textContent   = UI.currency(r.saldo_total  || 0);
 
-            // Tabla reciente
             const body = document.getElementById('recent-purchases-body');
             if (!acct.data.compras.length) {
                 body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray);">No tienes compras aún. <a href="/pages/lots.html">Ver lotes disponibles</a></td></tr>';
@@ -409,7 +451,7 @@
                     <td>
                         <div style="min-width:100px;">
                             <div class="progress">
-                                <div class="progress-bar ${c.estado === 'Completado' ? 'success' : ''}" 
+                                <div class="progress-bar ${c.estado === 'Completado' ? 'success' : ''}"
                                      style="width:${Math.round((c.cuotas_pagadas/c.num_cuotas)*100)}%"></div>
                             </div>
                             <small style="color:var(--gray)">${Math.round((c.cuotas_pagadas/c.num_cuotas)*100)}%</small>
@@ -450,7 +492,7 @@
                                 <span>${Math.round((c.cuotas_pagadas/c.num_cuotas)*100)}%</span>
                             </div>
                             <div class="progress">
-                                <div class="progress-bar ${c.estado === 'Completado' ? 'success' : ''}" 
+                                <div class="progress-bar ${c.estado === 'Completado' ? 'success' : ''}"
                                      style="width:${Math.round((c.cuotas_pagadas/c.num_cuotas)*100)}%"></div>
                             </div>
                         </div>
@@ -459,7 +501,7 @@
                             <div><strong>Pendiente:</strong><br><span style="color:var(--danger)">${UI.currency(c.saldo_pendiente)}</span></div>
                         </div>
                         ${c.estado !== 'Completado' ? `
-                        <button class="btn btn-success btn-sm" style="width:100%;justify-content:center;" 
+                        <button class="btn btn-success btn-sm" style="width:100%;justify-content:center;"
                                 onclick="quickPay(${c.id}, ${c.valor_cuota}, '${c.lote_codigo}')">
                             <i class="fas fa-credit-card"></i> Pagar Cuota
                         </button>` : `
@@ -472,19 +514,17 @@
         }
     }
 
-    // ── Cargar formulario de pago ──────────────────────────────
+    // ── Formulario de pago ─────────────────────────────────────
     async function loadPaymentForm() {
-        // Fecha de hoy por defecto
         document.getElementById('pay-fecha').value = new Date().toISOString().split('T')[0];
-        
         try {
-            const res = await API.purchases.my();
+            const res    = await API.purchases.my();
             const select = document.getElementById('pay-compra-id');
             select.innerHTML = '<option value="">-- Selecciona una compra --</option>';
             res.data.filter(c => c.estado !== 'Completado').forEach(c => {
-                select.innerHTML += `<option value="${c.id}" 
-                    data-total="${c.valor_total}" 
-                    data-pagado="${c.total_pagado}" 
+                select.innerHTML += `<option value="${c.id}"
+                    data-total="${c.valor_total}"
+                    data-pagado="${c.total_pagado}"
                     data-pendiente="${c.saldo_pendiente}"
                     data-cuota-num="${c.cuotas_pagadas + 1}"
                     data-cuota-valor="${c.valor_cuota}">
@@ -493,40 +533,31 @@
             });
         } catch (e) {}
 
-        document.getElementById('pay-compra-id').onchange = function() {
-            const opt = this.options[this.selectedIndex];
+        document.getElementById('pay-compra-id').onchange = function () {
+            const opt     = this.options[this.selectedIndex];
             const summary = document.getElementById('purchase-summary');
             if (this.value) {
                 summary.style.display = 'block';
-                document.getElementById('pay-total').textContent = UI.currency(opt.dataset.total);
-                document.getElementById('pay-pagado').textContent = UI.currency(opt.dataset.pagado);
+                document.getElementById('pay-total').textContent     = UI.currency(opt.dataset.total);
+                document.getElementById('pay-pagado').textContent    = UI.currency(opt.dataset.pagado);
                 document.getElementById('pay-pendiente').textContent = UI.currency(opt.dataset.pendiente);
                 document.getElementById('pay-num-cuota').textContent = opt.dataset.cuotaNum;
-                document.getElementById('pay-monto').value = parseFloat(opt.dataset.cuotaValor).toFixed(0);
+                document.getElementById('pay-monto').value           = parseFloat(opt.dataset.cuotaValor).toFixed(0);
             } else {
                 summary.style.display = 'none';
             }
         };
     }
 
-    function quickPay(compraId, monto, codigo) {
-        showSection('make-payment');
-        setTimeout(() => {
-            const sel = document.getElementById('pay-compra-id');
-            sel.value = compraId;
-            sel.dispatchEvent(new Event('change'));
-        }, 300);
-    }
-
     document.getElementById('payment-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const alertEl = document.getElementById('payment-alert');
-        const compra_id = document.getElementById('pay-compra-id').value;
-        const monto = document.getElementById('pay-monto').value;
-        const fecha_pago = document.getElementById('pay-fecha').value;
+        const alertEl     = document.getElementById('payment-alert');
+        const compra_id   = document.getElementById('pay-compra-id').value;
+        const monto       = document.getElementById('pay-monto').value;
+        const fecha_pago  = document.getElementById('pay-fecha').value;
         const metodo_pago = document.getElementById('pay-metodo').value;
-        const referencia = document.getElementById('pay-referencia').value;
-        const notas = document.getElementById('pay-notas').value;
+        const referencia  = document.getElementById('pay-referencia').value;
+        const notas       = document.getElementById('pay-notas').value;
 
         if (!compra_id || !monto) {
             alertEl.innerHTML = '<div class="alert alert-danger">Por favor completa los campos requeridos</div>';
@@ -581,12 +612,12 @@
         const container = document.getElementById('account-statement-content');
         try {
             const res = await API.purchases.account();
-            const r = res.data.resumen;
+            const r   = res.data.resumen;
             container.innerHTML = `
                 <div class="stats-grid" style="margin-bottom:2rem;">
                     <div class="stat-card">
                         <div class="stat-icon blue"><i class="fas fa-file-invoice-dollar"></i></div>
-                        <div><div class="stat-value">${UI.currency(r.deuda_total || 0)}</div><div class="stat-label">Deuda Total</div></div>
+                        <div><div class="stat-value">${UI.currency(r.deuda_total  || 0)}</div><div class="stat-label">Deuda Total</div></div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
@@ -594,7 +625,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon red"><i class="fas fa-hourglass-half"></i></div>
-                        <div><div class="stat-value">${UI.currency(r.saldo_total || 0)}</div><div class="stat-label">Saldo Pendiente</div></div>
+                        <div><div class="stat-value">${UI.currency(r.saldo_total  || 0)}</div><div class="stat-label">Saldo Pendiente</div></div>
                     </div>
                 </div>
                 <div class="table-container">
@@ -626,7 +657,7 @@
     // ── PQRS ───────────────────────────────────────────────────
     async function loadPQRS() {
         try {
-            const res = await API.pqrs.my();
+            const res  = await API.pqrs.my();
             const list = document.getElementById('my-pqrs-list');
             if (!res.data.length) {
                 list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>No tienes PQRS</h3></div>';
@@ -655,9 +686,9 @@
         UI.showLoading();
         try {
             await API.pqrs.create({
-                tipo: document.getElementById('pqrs-tipo').value,
-                asunto: document.getElementById('pqrs-asunto').value,
-                descripcion: document.getElementById('pqrs-descripcion').value
+                tipo:        document.getElementById('pqrs-tipo').value,
+                asunto:      document.getElementById('pqrs-asunto').value,
+                descripcion: document.getElementById('pqrs-descripcion').value,
             });
             UI.hideLoading();
             alertEl.innerHTML = '<div class="alert alert-success">✅ PQRS enviada exitosamente</div>';
@@ -673,12 +704,12 @@
     async function loadProfile() {
         try {
             const res = await API.auth.profile();
-            const u = res.user;
-            document.getElementById('prof-nombre').value = u.nombre;
-            document.getElementById('prof-apellido').value = u.apellido;
-            document.getElementById('prof-email').value = u.email;
-            document.getElementById('prof-telefono').value = u.telefono || '';
-            document.getElementById('prof-cedula').value = u.cedula || '';
+            const u   = res.user;
+            document.getElementById('prof-nombre').value    = u.nombre;
+            document.getElementById('prof-apellido').value  = u.apellido;
+            document.getElementById('prof-email').value     = u.email;
+            document.getElementById('prof-telefono').value  = u.telefono  || '';
+            document.getElementById('prof-cedula').value    = u.cedula    || '';
             document.getElementById('prof-direccion').value = u.direccion || '';
         } catch (e) {}
     }
@@ -689,10 +720,10 @@
         UI.showLoading();
         try {
             await API.auth.updateProfile({
-                nombre: document.getElementById('prof-nombre').value,
-                apellido: document.getElementById('prof-apellido').value,
-                telefono: document.getElementById('prof-telefono').value,
-                direccion: document.getElementById('prof-direccion').value
+                nombre:    document.getElementById('prof-nombre').value,
+                apellido:  document.getElementById('prof-apellido').value,
+                telefono:  document.getElementById('prof-telefono').value,
+                direccion: document.getElementById('prof-direccion').value,
             });
             UI.hideLoading();
             alertEl.innerHTML = '<div class="alert alert-success">✅ Perfil actualizado</div>';
@@ -702,7 +733,7 @@
         }
     });
 
-    // Cargar overview al iniciar
+    // Cargar resumen al iniciar
     loadOverview();
 </script>
 </body>
