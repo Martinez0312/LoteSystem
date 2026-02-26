@@ -129,4 +129,34 @@ app.listen(PORT, '0.0.0.0', async () => {
     }
 });
 
+async function ensureAdmin() {
+    const [admin] = await pool.query(
+        "SELECT id FROM users WHERE email = ?",
+        ["admin@lotesystem.com"]
+    );
+
+    if (!admin.length) {
+        const [roles] = await pool.query(
+            "SELECT id FROM roles WHERE nombre = ?",
+            ["Administrador"]
+        );
+
+        if (!roles.length) return;
+
+        const bcrypt = require('bcrypt');
+        const hashed = await bcrypt.hash("Admin123!", 10);
+
+        await pool.query(
+            `INSERT INTO users 
+            (rol_id, nombre, apellido, email, password_hash, activo)
+            VALUES (?, ?, ?, ?, ?, 1)`,
+            [roles[0].id, "Administrador", "Sistema", "admin@lotesystem.com", hashed]
+        );
+
+        console.log("✅ Admin creado automáticamente");
+    }
+}
+
+ensureAdmin();
+
 module.exports = app;
