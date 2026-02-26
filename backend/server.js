@@ -91,12 +91,12 @@ app.get('/health', (req, res) => {
 });
 
 // ─── FRONTEND SPA fallback ─────────────────────────────────────
-app.get('*', (req, res) => {
-    // No reenviar peticiones /api que no existen
+// 404 normal para rutas no encontradas
+app.use((req, res) => {
     if (req.path.startsWith('/api/')) {
-        return res.status(404).json({ success: false, message: 'Ruta no encontrada' });
+        return res.status(404).json({ success: false, message: 'Ruta API no encontrada' });
     }
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+    res.status(404).send('Página no encontrada');
 });
 
 // ─── MANEJO DE ERRORES ─────────────────────────────────────────
