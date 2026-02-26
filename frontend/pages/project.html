@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Proyecto | LoteSystem</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar">
+    <a href="/" class="navbar-brand"><i class="fas fa-map-marked-alt"></i> <span>Lote<span class="accent">System</span></span></a>
+    <div class="hamburger"><span></span><span></span><span></span></div>
+    <div class="navbar-menu">
+        <a href="/">Inicio</a><a href="/pages/lots.html">Lotes</a>
+        <a href="/pages/project.html" class="active">Proyecto</a>
+        <div id="user-menu" style="display:flex;gap:1rem;align-items:center;"></div>
+    </div>
+</nav>
+
+<div style="padding-top:70px;">
+    <!-- Hero proyecto -->
+    <div style="background:linear-gradient(135deg,#1a1a2e,#0f3460);color:white;padding:80px 2rem;text-align:center;">
+        <h1 style="font-size:2.5rem;margin-bottom:1rem;">Proyecto Habitacional</h1>
+        <p style="opacity:0.8;max-width:600px;margin:0 auto;font-size:1.1rem;">Conoce las etapas, características y avance de nuestro proyecto urbanístico residencial.</p>
+    </div>
+
+    <!-- Características del proyecto -->
+    <section class="section section-light">
+        <div class="container">
+            <div class="section-title"><h2>Características del Proyecto</h2><div class="title-line"></div></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:2rem;">
+                <div style="background:white;padding:2rem;border-radius:16px;box-shadow:var(--shadow);text-align:center;">
+                    <div style="font-size:3rem;margin-bottom:1rem;">🏘️</div>
+                    <h3>Urbanización Planificada</h3>
+                    <p style="color:var(--gray);">Diseño urbano moderno con calles, andenes y zonas verdes integradas.</p>
+                </div>
+                <div style="background:white;padding:2rem;border-radius:16px;box-shadow:var(--shadow);text-align:center;">
+                    <div style="font-size:3rem;margin-bottom:1rem;">💧</div>
+                    <h3>Servicios Públicos</h3>
+                    <p style="color:var(--gray);">Todos los servicios: agua, electricidad, gas, alcantarillado y telecomunicaciones.</p>
+                </div>
+                <div style="background:white;padding:2rem;border-radius:16px;box-shadow:var(--shadow);text-align:center;">
+                    <div style="font-size:3rem;margin-bottom:1rem;">🌳</div>
+                    <h3>Zonas Verdes</h3>
+                    <p style="color:var(--gray);">Parques y zonas recreativas para el disfrute de toda la familia.</p>
+                </div>
+                <div style="background:white;padding:2rem;border-radius:16px;box-shadow:var(--shadow);text-align:center;">
+                    <div style="font-size:3rem;margin-bottom:1rem;">🔒</div>
+                    <h3>Seguridad</h3>
+                    <p style="color:var(--gray);">Urbanización cerrada con acceso controlado para mayor tranquilidad.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Etapas -->
+    <section class="section section-white">
+        <div class="container">
+            <div class="section-title"><h2>Etapas del Proyecto</h2><div class="title-line"></div></div>
+            <div id="stages-detail">
+                <div class="empty-state"><div class="icon">⏳</div><h3>Cargando...</h3></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lotes por etapa -->
+    <section class="section section-light">
+        <div class="container">
+            <div class="section-title"><h2>Lotes Disponibles por Etapa</h2><div class="title-line"></div></div>
+            <div id="lots-by-stage">
+                <div class="empty-state"><div class="icon">⏳</div><h3>Cargando...</h3></div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+async function loadProject() {
+    try {
+        const [stagesRes, lotsRes] = await Promise.all([API.stages.all(), API.lots.getAll()]);
+        const stages = stagesRes.data;
+        const lots = lotsRes.data;
+        const today = new Date();
+
+        // Etapas con timeline
+        document.getElementById('stages-detail').innerHTML = stages.map((s, i) => {
+            const fin = s.fecha_fin ? new Date(s.fecha_fin) : null;
+            const inicio = s.fecha_inicio ? new Date(s.fecha_inicio) : null;
+            let status = 'Próximamente';
+            let color = 'var(--gray)';
+            if (fin && today > fin) { status = '✅ Completada'; color = 'var(--success)'; }
+            else if (inicio && today >= inicio) { status = '🔨 En progreso'; color = 'var(--primary)'; }
+            
+            const etapaLots = lots.filter(l => l.etapa_id === s.id);
+            const disponibles = etapaLots.filter(l => l.estado === 'Disponible').length;
+            
+            return `
+            <div style="display:flex;gap:2rem;align-items:flex-start;margin-bottom:2rem;background:white;padding:1.5rem;border-radius:16px;box-shadow:var(--shadow);">
+                <div style="min-width:60px;height:60px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800;">${i+1}</div>
+                <div style="flex:1;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h3>${s.nombre}</h3>
+                        <span style="font-weight:700;color:${color};">${status}</span>
+                    </div>
+                    <p style="color:var(--gray);margin:0.5rem 0;">${s.descripcion || ''}</p>
+                    <div style="display:flex;gap:2rem;font-size:0.85rem;margin-top:0.5rem;">
+                        <span>📅 ${s.fecha_inicio ? UI.date(s.fecha_inicio) : 'N/A'} - ${s.fecha_fin ? UI.date(s.fecha_fin) : 'N/A'}</span>
+                        <span>🏗️ ${etapaLots.length} lotes totales</span>
+                        <span style="color:var(--success);">✅ ${disponibles} disponibles</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+
+        // Lotes por etapa
+        const byStage = {};
+        lots.filter(l => l.estado === 'Disponible').forEach(l => {
+            if (!byStage[l.etapa_id]) byStage[l.etapa_id] = { nombre: l.etapa_nombre || 'Sin etapa', lots: [] };
+            byStage[l.etapa_id].lots.push(l);
+        });
+
+        let html = '';
+        Object.values(byStage).forEach(group => {
+            html += `<h3 style="margin-bottom:1rem;">📍 ${group.nombre}</h3>`;
+            html += `<div class="lots-grid" style="margin-bottom:2rem;">`;
+            group.lots.forEach((lot, i) => {
+                html += `<div class="lot-card">
+                    <div class="lot-card-img" style="background:linear-gradient(135deg,#2c7be5,#6f42c1)">
+                        <span class="lot-icon">🏗️</span>
+                        <div class="lot-badge badge-disponible">Disponible</div>
+                    </div>
+                    <div class="lot-card-body">
+                        <h3>${lot.codigo}</h3>
+                        <div class="lot-info">
+                            <div class="lot-info-item"><i class="fas fa-vector-square"></i>${lot.area} m²</div>
+                            <div class="lot-info-item"><i class="fas fa-map-marker-alt"></i>${lot.ubicacion}</div>
+                        </div>
+                        <div class="lot-price">${UI.currency(lot.valor)}<span> / ${lot.num_cuotas} cuotas</span></div>
+                        <a href="/pages/lots.html" class="btn btn-primary" style="width:100%;justify-content:center;">Ver Detalle</a>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+        });
+        document.getElementById('lots-by-stage').innerHTML = html || '<div class="empty-state"><div class="icon">🏗️</div><h3>No hay lotes disponibles</h3></div>';
+    } catch (e) {}
+}
+loadProject();
+</script>
+</body>
+</html>

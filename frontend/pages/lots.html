@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotes Disponibles | LoteSystem</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar">
+    <a href="/" class="navbar-brand"><i class="fas fa-map-marked-alt"></i> <span>Lote<span class="accent">System</span></span></a>
+    <div class="hamburger"><span></span><span></span><span></span></div>
+    <div class="navbar-menu">
+        <a href="../index.html">Inicio</a>
+        <a href="lots.html" class="active">Lotes</a>
+        <a href="project.html">Proyecto</a>
+        <div id="user-menu" style="display:flex;gap:1rem;align-items:center;"></div>
+    </div>
+</nav>
+
+<div style="padding:100px 2rem 60px;max-width:1200px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:2.5rem;">
+        <h1>Lotes Disponibles</h1>
+        <p style="color:var(--gray);">Encuentra tu lote ideal entre 100 y 200 m²</p>
+    </div>
+
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label>Estado</label>
+            <select class="form-control form-select" id="filter-estado">
+                <option value="">Todos</option>
+                <option value="Disponible" selected>Disponibles</option>
+                <option value="Reservado">Reservados</option>
+                <option value="Vendido">Vendidos</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Área Mín (m²)</label>
+            <input type="number" class="form-control" id="filter-min" placeholder="100" min="100">
+        </div>
+        <div class="filter-group">
+            <label>Área Máx (m²)</label>
+            <input type="number" class="form-control" id="filter-max" placeholder="200" max="200">
+        </div>
+        <div class="filter-group">
+            <label>Valor Máximo</label>
+            <input type="number" class="form-control" id="filter-max-valor" placeholder="Sin límite">
+        </div>
+        <button class="btn btn-primary" onclick="loadLots()"><i class="fas fa-search"></i> Buscar</button>
+        <button class="btn btn-outline" onclick="clearFilters()"><i class="fas fa-times"></i> Limpiar</button>
+    </div>
+
+    <div id="results-count" style="color:var(--gray);margin-bottom:1rem;"></div>
+    <div id="lots-grid" class="lots-grid">
+        <div class="empty-state"><div class="icon">⏳</div><h3>Cargando lotes...</h3></div>
+    </div>
+</div>
+
+<!-- Modal detalle lote -->
+<div class="modal-overlay" id="modal-lot">
+    <div class="modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-map-pin"></i> Detalle del Lote</h3>
+            <button class="modal-close" onclick="UI.closeModal('modal-lot')">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-lot-content">Cargando...</div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="UI.closeModal('modal-lot')">Cerrar</button>
+            <button class="btn btn-primary" id="btn-comprar" onclick="confirmBuy()">
+                <i class="fas fa-shopping-cart"></i> Adquirir Lote
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+let currentLotId = null;
+const gradients = [
+    'linear-gradient(135deg,#667eea,#764ba2)',
+    'linear-gradient(135deg,#11998e,#38ef7d)',
+    'linear-gradient(135deg,#f7971e,#ffd200)',
+    'linear-gradient(135deg,#2c7be5,#6f42c1)',
+    'linear-gradient(135deg,#f953c6,#b91d73)',
+    'linear-gradient(135deg,#4facfe,#00f2fe)',
+];
+
+async function loadLots() {
+    const grid = document.getElementById('lots-grid');
+    grid.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><h3>Buscando lotes...</h3></div>';
+    
+    const params = {};
+    const estado = document.getElementById('filter-estado').value;
+    const minArea = document.getElementById('filter-min').value;
+    const maxArea = document.getElementById('filter-max').value;
+    const maxValor = document.getElementById('filter-max-valor').value;
+    if (estado) params.estado = estado;
+    if (minArea) params.min_area = minArea;
+    if (maxArea) params.max_area = maxArea;
+    if (maxValor) params.max_valor = maxValor;
+
+    try {
+        const res = await API.lots.getAll(params);
+        document.getElementById('results-count').textContent = `Mostrando ${res.data.length} lote(s)`;
+        
+        if (!res.data.length) {
+            grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="icon">🔍</div><h3>No se encontraron lotes</h3><p>Intenta con otros filtros</p></div>';
+            return;
+        }
+        grid.innerHTML = res.data.map((lot, i) => `
+            <div class="lot-card" style="cursor:pointer;" onclick="showDetail(${lot.id})">
+                <div class="lot-card-img" style="background:${gradients[i % gradients.length]}">
+                    <span class="lot-icon">🏗️</span>
+                    <div class="lot-badge badge-${lot.estado.toLowerCase()}">${lot.estado}</div>
+                </div>
+                <div class="lot-card-body">
+                    <h3>${lot.codigo}</h3>
+                    <div class="lot-info">
+                        <div class="lot-info-item"><i class="fas fa-vector-square"></i> ${lot.area} m²</div>
+                        <div class="lot-info-item"><i class="fas fa-map-marker-alt"></i> ${lot.ubicacion}</div>
+                        ${lot.etapa_nombre ? `<div class="lot-info-item"><i class="fas fa-layer-group"></i> ${lot.etapa_nombre}</div>` : ''}
+                    </div>
+                    <div class="lot-price">${UI.currency(lot.valor)}<br><span>Cuota: ${UI.currency(lot.valor_cuota)} x ${lot.num_cuotas} meses</span></div>
+                    <button class="btn ${lot.estado === 'Disponible' ? 'btn-primary' : 'btn-outline'}" style="width:100%;justify-content:center;">
+                        ${lot.estado === 'Disponible' ? '<i class="fas fa-shopping-cart"></i> Adquirir' : '<i class="fas fa-info-circle"></i> Ver Detalle'}
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="icon">❌</div><h3>${e.message}</h3></div>`;
+    }
+}
+
+async function showDetail(id) {
+    currentLotId = id;
+    UI.openModal('modal-lot');
+    const content = document.getElementById('modal-lot-content');
+    const btn = document.getElementById('btn-comprar');
+    try {
+        const res = await API.lots.getById(id);
+        const lot = res.data;
+        content.innerHTML = `
+            <div style="display:grid;gap:1rem;">
+                <div style="background:var(--primary-light);padding:1.2rem;border-radius:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <h3 style="color:var(--primary);">${lot.codigo}</h3>
+                        ${UI.statusBadge(lot.estado)}
+                    </div>
+                    <p style="color:var(--gray);margin-top:0.5rem;">${lot.descripcion || 'Lote de terreno en urbanización planificada.'}</p>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                    <div style="background:var(--light);padding:1rem;border-radius:8px;"><div style="font-size:0.8rem;color:var(--gray);">ÁREA</div><div style="font-size:1.2rem;font-weight:700;">${lot.area} m²</div></div>
+                    <div style="background:var(--light);padding:1rem;border-radius:8px;"><div style="font-size:0.8rem;color:var(--gray);">ETAPA</div><div style="font-size:1.1rem;font-weight:600;">${lot.etapa_nombre || 'N/A'}</div></div>
+                    <div style="background:var(--light);padding:1rem;border-radius:8px;"><div style="font-size:0.8rem;color:var(--gray);">VALOR TOTAL</div><div style="font-size:1.1rem;font-weight:700;color:var(--primary);">${UI.currency(lot.valor)}</div></div>
+                    <div style="background:var(--light);padding:1rem;border-radius:8px;"><div style="font-size:0.8rem;color:var(--gray);">CUOTA MENSUAL</div><div style="font-size:1.1rem;font-weight:700;color:var(--success);">${UI.currency(lot.valor_cuota)}</div></div>
+                </div>
+                <div style="background:var(--light);padding:1rem;border-radius:8px;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-map-marker-alt" style="color:var(--primary);"></i>
+                    <span>${lot.ubicacion}</span>
+                </div>
+            </div>
+        `;
+        
+        if (lot.estado === 'Disponible') {
+            btn.style.display = 'inline-flex';
+            if (!Auth.isLoggedIn()) {
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Ingresar para Comprar';
+                btn.onclick = () => window.location.href = '/pages/login.html';
+            } else {
+                btn.innerHTML = '<i class="fas fa-shopping-cart"></i> Adquirir Lote';
+                btn.onclick = confirmBuy;
+            }
+        } else {
+            btn.style.display = 'none';
+        }
+    } catch (e) {
+        content.innerHTML = '<p style="color:red;">Error al cargar detalle</p>';
+    }
+}
+
+async function confirmBuy() {
+    if (!Auth.isLoggedIn()) { window.location.href = '/pages/login.html'; return; }
+    if (!UI.confirm('¿Confirma que desea adquirir este lote?')) return;
+    UI.showLoading();
+    try {
+        await API.purchases.create({ lote_id: currentLotId, num_cuotas: 12 });
+        UI.hideLoading();
+        UI.closeModal('modal-lot');
+        UI.toast('¡Compra realizada! Redirigiendo a tu dashboard...', 'success');
+        setTimeout(() => window.location.href = '/pages/dashboard.html', 2000);
+    } catch (e) {
+        UI.hideLoading();
+        UI.toast(e.message, 'error');
+    }
+}
+
+function clearFilters() {
+    document.getElementById('filter-estado').value = '';
+    document.getElementById('filter-min').value = '';
+    document.getElementById('filter-max').value = '';
+    document.getElementById('filter-max-valor').value = '';
+    loadLots();
+}
+
+loadLots();
+</script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrarse | LoteSystem</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .auth-card { max-width: 520px; }
+        .password-strength { height: 5px; border-radius: 3px; margin-top: 6px; transition: all 0.3s; }
+    </style>
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <div class="icon">🏠</div>
+            <h2>Crear Cuenta</h2>
+            <p style="color:var(--gray);font-size:0.9rem;">Únete a LoteSystem</p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <form id="register-form" novalidate>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Nombre *</label>
+                    <input type="text" class="form-control" id="nombre" placeholder="Tu nombre" required>
+                    <div class="form-error" id="nombre-error"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Apellido *</label>
+                    <input type="text" class="form-control" id="apellido" placeholder="Tu apellido" required>
+                    <div class="form-error" id="apellido-error"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-envelope"></i> Correo Electrónico *</label>
+                <input type="email" class="form-control" id="email" placeholder="tu@correo.com" required>
+                <div class="form-error" id="email-error"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Cédula</label>
+                    <input type="text" class="form-control" id="cedula" placeholder="Número de documento">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono</label>
+                    <input type="tel" class="form-control" id="telefono" placeholder="300 000 0000">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-lock"></i> Contraseña *</label>
+                <input type="password" class="form-control" id="password" placeholder="Mínimo 8 caracteres" required oninput="checkStrength(this.value)">
+                <div class="password-strength" id="pwd-strength"></div>
+                <div class="form-error" id="password-error"></div>
+                <small style="color:var(--gray);font-size:0.78rem;">Debe contener mayúsculas, minúsculas y números</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Confirmar Contraseña *</label>
+                <input type="password" class="form-control" id="confirm-password" placeholder="Repite tu contraseña" required>
+                <div class="form-error" id="confirm-error"></div>
+            </div>
+            <div class="form-group">
+                <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                    <input type="checkbox" id="terms" required style="margin-top:3px;">
+                    <span style="font-size:0.88rem;color:var(--gray);">Acepto los <a href="#">términos y condiciones</a> y la <a href="#">política de privacidad</a></span>
+                </label>
+                <div class="form-error" id="terms-error"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="btn-register">
+                <i class="fas fa-user-plus"></i> Crear Cuenta
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            ¿Ya tienes cuenta? <a href="login.html"><strong>Inicia Sesión</strong></a>
+        </div>
+        <div style="text-align:center;margin-top:1rem;">
+            <a href="../index.html" style="color:var(--gray);font-size:0.85rem;"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+        </div>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+    if (Auth.isLoggedIn()) {
+        window.location.href = Auth.isAdmin() ? '/pages/admin-dashboard.html' : '/pages/dashboard.html';
+    }
+
+    function checkStrength(pwd) {
+        const bar = document.getElementById('pwd-strength');
+        let score = 0;
+        if (pwd.length >= 8) score++;
+        if (/[A-Z]/.test(pwd)) score++;
+        if (/[a-z]/.test(pwd)) score++;
+        if (/[0-9]/.test(pwd)) score++;
+        if (/[^A-Za-z0-9]/.test(pwd)) score++;
+        
+        const colors = ['', '#dc3545', '#ffc107', '#ffc107', '#28a745', '#28a745'];
+        const widths = ['0%', '20%', '40%', '60%', '80%', '100%'];
+        bar.style.background = colors[score] || '';
+        bar.style.width = widths[score];
+    }
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('btn-register');
+        const alertContainer = document.getElementById('alert-container');
+        alertContainer.innerHTML = '';
+
+        const nombre = document.getElementById('nombre').value.trim();
+        const apellido = document.getElementById('apellido').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const cedula = document.getElementById('cedula').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPwd = document.getElementById('confirm-password').value;
+        const terms = document.getElementById('terms').checked;
+
+        // Validaciones
+        let valid = true;
+        const setErr = (id, msg) => { document.getElementById(id).textContent = msg; if (msg) valid = false; };
+
+        setErr('nombre-error', nombre ? '' : 'El nombre es requerido');
+        setErr('apellido-error', apellido ? '' : 'El apellido es requerido');
+        setErr('email-error', email ? '' : 'El email es requerido');
+        setErr('password-error', password.length >= 8 ? '' : 'Mínimo 8 caracteres');
+        setErr('confirm-error', password === confirmPwd ? '' : 'Las contraseñas no coinciden');
+        setErr('terms-error', terms ? '' : 'Debes aceptar los términos');
+
+        if (!valid) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+
+        try {
+            await API.auth.register({ nombre, apellido, email, password, cedula, telefono });
+            alertContainer.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> ¡Cuenta creada exitosamente! Redirigiendo al login...</div>`;
+            setTimeout(() => window.location.href = '/pages/login.html', 2000);
+        } catch (error) {
+            alertContainer.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ${error.message}</div>`;
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-user-plus"></i> Crear Cuenta';
+        }
+    });
+</script>
+</body>
+</html>

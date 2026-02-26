@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | LoteSystem</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <div class="icon">🏡</div>
+            <h2>LoteSystem</h2>
+            <p style="color:var(--gray);font-size:0.9rem;">Ingresa a tu cuenta</p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <form id="login-form" novalidate>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-envelope"></i> Correo Electrónico</label>
+                <input type="email" class="form-control" id="email" placeholder="tu@correo.com" required>
+                <div class="form-error" id="email-error"></div>
+            </div>
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-lock"></i> Contraseña</label>
+                <div style="position:relative;">
+                    <input type="password" class="form-control" id="password" placeholder="Tu contraseña" required style="padding-right:45px;">
+                    <button type="button" onclick="togglePwd()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gray);">
+                        <i class="fas fa-eye" id="eye-icon"></i>
+                    </button>
+                </div>
+                <div class="form-error" id="password-error"></div>
+            </div>
+
+            <div style="text-align:right;margin-bottom:1.5rem;">
+                <a href="forgot-password.html" style="font-size:0.88rem;color:var(--primary);">¿Olvidaste tu contraseña?</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;" id="btn-login">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            ¿No tienes cuenta? <a href="register.html"><strong>Regístrate aquí</strong></a>
+        </div>
+        <div style="text-align:center;margin-top:1rem;">
+            <a href="/" style="color:var(--gray);font-size:0.85rem;"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+        </div>
+
+        <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+            <p style="text-align:center;font-size:0.8rem;color:var(--gray);margin-bottom:0.8rem;">Credenciales de demostración:</p>
+            <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">
+                <button onclick="fillDemo('admin@lotesystem.com','Admin123!')" class="btn btn-sm btn-outline" style="font-size:0.78rem;">
+                    <i class="fas fa-user-shield"></i> Admin
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+    // Si ya está logueado, redirigir
+    if (Auth.isLoggedIn()) {
+        window.location.href = Auth.isAdmin() ? '/pages/admin-dashboard.html' : '/pages/dashboard.html';
+    }
+
+    function togglePwd() {
+        const pwd = document.getElementById('password');
+        const eye = document.getElementById('eye-icon');
+        if (pwd.type === 'password') {
+            pwd.type = 'text';
+            eye.className = 'fas fa-eye-slash';
+        } else {
+            pwd.type = 'password';
+            eye.className = 'fas fa-eye';
+        }
+    }
+
+    function fillDemo(email, pwd) {
+        document.getElementById('email').value = email;
+        document.getElementById('password').value = pwd;
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const alertContainer = document.getElementById('alert-container');
+        const btn = document.getElementById('btn-login');
+
+        alertContainer.innerHTML = '';
+
+        // Validación básica frontend
+        let valid = true;
+        if (!email) { document.getElementById('email-error').textContent = 'El email es requerido'; valid = false; }
+        else document.getElementById('email-error').textContent = '';
+        if (!password) { document.getElementById('password-error').textContent = 'La contraseña es requerida'; valid = false; }
+        else document.getElementById('password-error').textContent = '';
+        if (!valid) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ingresando...';
+
+        try {
+            const res = await API.auth.login({ email, password });
+            Auth.setSession(res.token, res.user);
+            UI.toast('¡Bienvenido ' + res.user.nombre + '!', 'success');
+            
+            setTimeout(() => {
+                window.location.href = res.user.rol === 'Administrador' 
+                    ? '/pages/admin-dashboard.html' 
+                    : '/pages/dashboard.html';
+            }, 1000);
+
+        } catch (error) {
+            alertContainer.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> ${error.message}</div>`;
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
+        }
+    });
+</script>
+</body>
+</html>

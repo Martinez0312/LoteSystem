@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoteSystem - Gestión de Venta de Lotes de Terreno</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Landing page extra styles */
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
+        .feature-card {
+            background: white; border-radius: 16px; padding: 2rem;
+            box-shadow: var(--shadow); text-align: center;
+            transition: var(--transition);
+        }
+        .feature-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+        .feature-icon {
+            width: 70px; height: 70px; border-radius: 50%;
+            background: var(--primary-light); color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; margin: 0 auto 1.5rem;
+        }
+        .feature-card h3 { margin-bottom: 0.8rem; font-size: 1.1rem; }
+        .feature-card p { color: var(--gray); font-size: 0.92rem; line-height: 1.7; }
+
+        /* Lots preview */
+        .lot-preview-card {
+            background: white; border-radius: 16px; overflow: hidden;
+            box-shadow: var(--shadow); transition: var(--transition);
+        }
+        .lot-preview-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+        .lot-preview-img {
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3.5rem; position: relative;
+        }
+        .lot-preview-img.green { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .lot-preview-img.orange { background: linear-gradient(135deg, #f7971e, #ffd200); }
+        .lot-preview-img.blue { background: linear-gradient(135deg, #2c7be5, #6f42c1); }
+        .lot-preview-body { padding: 1.5rem; }
+        .lot-code { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
+
+        /* Testimonial / counter */
+        .counter-section { background: var(--primary); color: white; padding: 60px 2rem; }
+        .counters { display: flex; justify-content: center; gap: 5rem; flex-wrap: wrap; }
+        .counter { text-align: center; }
+        .counter-number { font-size: 3rem; font-weight: 900; display: block; }
+        .counter-label { opacity: 0.8; font-size: 1rem; }
+
+        /* About */
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .about-content h2 { font-size: 2rem; margin-bottom: 1.5rem; }
+        .about-content p { color: var(--gray); margin-bottom: 1.2rem; line-height: 1.8; }
+        .about-list { list-style: none; }
+        .about-list li { padding: 8px 0; display: flex; align-items: center; gap: 12px; color: var(--gray); }
+        .about-list li i { color: var(--success); }
+        .about-visual {
+            background: linear-gradient(135deg, var(--primary), #6f42c1);
+            border-radius: 20px; padding: 3rem; text-align: center;
+            color: white;
+        }
+        .about-visual .big-icon { font-size: 5rem; display: block; margin-bottom: 1.5rem; }
+        .about-visual h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+        .about-visual p { opacity: 0.85; line-height: 1.7; }
+
+        @media (max-width: 768px) { .about-grid { grid-template-columns: 1fr; } .counters { gap: 2.5rem; } }
+    </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+        <i class="fas fa-map-marked-alt"></i>
+        <span>Lote<span class="accent">System</span></span>
+    </a>
+    <div class="hamburger" onclick="this.nextElementSibling.classList.toggle('open')">
+        <span></span><span></span><span></span>
+    </div>
+    <div class="navbar-menu">
+        <a href="index.html">Inicio</a>
+        <a href="#lotes">Lotes</a>
+        <a href="#proyecto">El Proyecto</a>
+        <a href="pages/pqrs-public.html">PQRS</a>
+        <div id="user-menu" style="display:flex;gap:1rem;align-items:center;"></div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-badge">🏡 Proyecto Habitacional Premium</div>
+        <h1>Tu <span>Lote de Terreno</span><br>Ideal Te Espera</h1>
+        <p>Invierte en el futuro construyendo el hogar de tus sueños. Lotes de 100 a 200 m² con facilidades de pago en cómodas cuotas.</p>
+        <div class="hero-btns">
+            <a href="#lotes" class="btn btn-primary btn-lg">
+                <i class="fas fa-search"></i> Ver Lotes Disponibles
+            </a>
+            <a href="pages/register.html" class="btn btn-secondary btn-lg">
+                <i class="fas fa-user-plus"></i> Registrarme
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="number" id="stat-lots">50+</div>
+                <div class="label">Lotes Disponibles</div>
+            </div>
+            <div class="hero-stat">
+                <div class="number">100-200</div>
+                <div class="label">m² por Lote</div>
+            </div>
+            <div class="hero-stat">
+                <div class="number">12+</div>
+                <div class="label">Meses de Plazo</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CONTADORES -->
+<div class="counter-section">
+    <div class="counters">
+        <div class="counter"><span class="counter-number">4</span><span class="counter-label">Etapas del Proyecto</span></div>
+        <div class="counter"><span class="counter-number">100%</span><span class="counter-label">Escrituración Legal</span></div>
+        <div class="counter"><span class="counter-number">12</span><span class="counter-label">Cuotas Cómodas</span></div>
+        <div class="counter"><span class="counter-number">24/7</span><span class="counter-label">Soporte Digital</span></div>
+    </div>
+</div>
+
+<!-- CARACTERÍSTICAS -->
+<section class="section section-light">
+    <div class="container">
+        <div class="section-title">
+            <h2>¿Por Qué Elegirnos?</h2>
+            <div class="title-line"></div>
+            <p>Ofrecemos la mejor experiencia para adquirir tu lote de terreno con total seguridad y transparencia.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Seguridad Jurídica</h3>
+                <p>Todos nuestros lotes cuentan con escrituras legales y documentación al día. Tu inversión está protegida.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-money-bill-wave"></i></div>
+                <h3>Pagos por Cuotas</h3>
+                <p>Facilidades de pago en hasta 12 cuotas mensuales. Sistema de seguimiento automático de tus pagos.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-envelope-open-text"></i></div>
+                <h3>Comprobantes Automáticos</h3>
+                <p>Recibe por correo electrónico el comprobante PDF de cada pago registrado automáticamente.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                <h3>Estado de Cuenta Online</h3>
+                <p>Consulta en cualquier momento tu historial de pagos, saldo pendiente y estado de tus lotes.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-headset"></i></div>
+                <h3>Sistema PQRS</h3>
+                <p>Canal directo para peticiones, quejas, reclamos y sugerencias con seguimiento en tiempo real.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-map-marked-alt"></i></div>
+                <h3>Ubicación Privilegiada</h3>
+                <p>Proyecto habitacional en zona de alto crecimiento con todos los servicios públicos disponibles.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- LOTES DISPONIBLES -->
+<section class="section section-white" id="lotes">
+    <div class="container">
+        <div class="section-title">
+            <h2>Lotes Disponibles</h2>
+            <div class="title-line"></div>
+            <p>Encuentra el lote perfecto para construir el hogar de tus sueños.</p>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>Estado</label>
+                <select class="form-control form-select" id="filter-estado">
+                    <option value="">Todos</option>
+                    <option value="Disponible">Disponible</option>
+                    <option value="Reservado">Reservado</option>
+                    <option value="Vendido">Vendido</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Área Mínima (m²)</label>
+                <input type="number" class="form-control" id="filter-min-area" placeholder="100" min="100" max="200">
+            </div>
+            <div class="filter-group">
+                <label>Área Máxima (m²)</label>
+                <input type="number" class="form-control" id="filter-max-area" placeholder="200" min="100" max="200">
+            </div>
+            <button class="btn btn-primary" onclick="loadLots()">
+                <i class="fas fa-search"></i> Filtrar
+            </button>
+        </div>
+
+        <div id="lots-grid" class="lots-grid">
+            <div class="empty-state">
+                <div class="icon">🏗️</div>
+                <h3>Cargando lotes...</h3>
+            </div>
+        </div>
+
+        <div style="text-align:center;margin-top:2rem;">
+            <a href="/pages/lots.html" class="btn btn-outline btn-lg">
+                <i class="fas fa-th"></i> Ver Todos los Lotes
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ETAPAS DEL PROYECTO -->
+<section class="section section-light" id="proyecto">
+    <div class="container">
+        <div class="section-title">
+            <h2>Etapas del Proyecto</h2>
+            <div class="title-line"></div>
+            <p>Conoce el avance y las fases de nuestro proyecto habitacional.</p>
+        </div>
+
+        <div id="stages-container">
+            <div class="empty-state"><div class="icon">🏗️</div><h3>Cargando etapas...</h3></div>
+        </div>
+    </div>
+</section>
+
+<!-- SOBRE EL PROYECTO -->
+<section class="section section-white">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-content">
+                <h2>Un Proyecto Pensado<br>Para Tu Familia</h2>
+                <p>Nuestro urbanismo residencial ofrece lotes de terreno ideales para construir la vivienda de tus sueños en un entorno seguro y planificado.</p>
+                <p>Con áreas entre 100 y 200 m², cada lote está cuidadosamente dimensionado para proyectos de construcción de viviendas familiares con todas las comodidades.</p>
+                <ul class="about-list">
+                    <li><i class="fas fa-check-circle"></i> Acceso a servicios públicos (agua, luz, gas)</li>
+                    <li><i class="fas fa-check-circle"></i> Vías pavimentadas de acceso</li>
+                    <li><i class="fas fa-check-circle"></i> Zonas verdes y recreativas</li>
+                    <li><i class="fas fa-check-circle"></i> Escrituración ante notaría</li>
+                    <li><i class="fas fa-check-circle"></i> Ubicación de fácil acceso</li>
+                    <li><i class="fas fa-check-circle"></i> Financiación propia sin banco</li>
+                </ul>
+                <div style="margin-top:2rem;">
+                    <a href="/pages/register.html" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home"></i> Quiero Mi Lote
+                    </a>
+                </div>
+            </div>
+            <div class="about-visual">
+                <span class="big-icon">🏘️</span>
+                <h3>Proyecto Habitacional<br>Residencial</h3>
+                <p>Diseñado para garantizar calidad de vida con planificación urbana moderna, servicios completos y una comunidad unida.</p>
+                <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:center;flex-wrap:wrap;">
+                    <div style="background:rgba(255,255,255,0.15);padding:12px 20px;border-radius:10px;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:900;">100m²</div>
+                        <div style="font-size:0.8rem;opacity:0.8;">Área mínima</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.15);padding:12px 20px;border-radius:10px;text-align:center;">
+                        <div style="font-size:1.5rem;font-weight:900;">200m²</div>
+                        <div style="font-size:0.8rem;opacity:0.8;">Área máxima</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-grid">
+        <div class="footer-brand">
+            <h3><i class="fas fa-map-marked-alt"></i> LoteSystem</h3>
+            <p>Sistema integral para la gestión de venta de lotes de terreno. Tecnología al servicio de tu inversión inmobiliaria.</p>
+        </div>
+        <div class="footer-links">
+            <h4>Accesos Rápidos</h4>
+            <a href="/">Inicio</a>
+            <a href="#lotes">Lotes Disponibles</a>
+            <a href="#proyecto">El Proyecto</a>
+            <a href="/pages/pqrs-public.html">PQRS</a>
+        </div>
+        <div class="footer-links">
+            <h4>Mi Cuenta</h4>
+            <a href="/pages/login.html">Iniciar Sesión</a>
+            <a href="/pages/register.html">Registrarse</a>
+            <a href="/pages/dashboard.html">Dashboard</a>
+        </div>
+        <div class="footer-links">
+            <h4>Contacto</h4>
+            <a href="#"><i class="fas fa-phone"></i> +57 300 000 0000</a>
+            <a href="#"><i class="fas fa-envelope"></i> info@lotesystem.com</a>
+            <a href="#"><i class="fas fa-map-marker-alt"></i> Colombia</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2024 LoteSystem — Sistema de Gestión de Venta de Lotes de Terreno. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<!-- Modal detalle lote -->
+<div class="modal-overlay" id="modal-lot">
+    <div class="modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-map-pin"></i> Detalle del Lote</h3>
+            <button class="modal-close" onclick="UI.closeModal('modal-lot')">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-lot-content">Cargando...</div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="UI.closeModal('modal-lot')">Cerrar</button>
+            <a href="/pages/login.html" class="btn btn-primary" id="btn-comprar">
+                <i class="fas fa-shopping-cart"></i> Adquirir Lote
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+    // Cargar lotes en la página principal
+    async function loadLots() {
+        const grid = document.getElementById('lots-grid');
+        grid.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><h3>Cargando...</h3></div>';
+
+        try {
+            const params = {};
+            const estado = document.getElementById('filter-estado').value;
+            const minArea = document.getElementById('filter-min-area').value;
+            const maxArea = document.getElementById('filter-max-area').value;
+            if (estado) params.estado = estado;
+            if (minArea) params.min_area = minArea;
+            if (maxArea) params.max_area = maxArea;
+
+            const res = await API.lots.getAll(params);
+            const lots = res.data.slice(0, 6); // Solo 6 en la landing
+
+            if (!lots.length) {
+                grid.innerHTML = '<div class="empty-state"><div class="icon">🏗️</div><h3>No hay lotes con esos filtros</h3></div>';
+                return;
+            }
+
+            const gradients = [
+                'linear-gradient(135deg,#667eea,#764ba2)',
+                'linear-gradient(135deg,#11998e,#38ef7d)',
+                'linear-gradient(135deg,#f7971e,#ffd200)',
+                'linear-gradient(135deg,#2c7be5,#6f42c1)',
+                'linear-gradient(135deg,#f953c6,#b91d73)',
+                'linear-gradient(135deg,#4facfe,#00f2fe)',
+            ];
+
+            grid.innerHTML = lots.map((lot, i) => `
+                <div class="lot-card" onclick="showLotDetail(${lot.id})">
+                    <div class="lot-card-img" style="background:${gradients[i % gradients.length]}">
+                        <span class="lot-icon">🏗️</span>
+                        <div class="lot-badge badge-${lot.estado.toLowerCase()}">${lot.estado}</div>
+                    </div>
+                    <div class="lot-card-body">
+                        <h3>${lot.codigo}</h3>
+                        <div class="lot-info">
+                            <div class="lot-info-item"><i class="fas fa-vector-square"></i> ${lot.area} m²</div>
+                            <div class="lot-info-item"><i class="fas fa-map-marker-alt"></i> ${lot.ubicacion}</div>
+                            ${lot.etapa_nombre ? `<div class="lot-info-item"><i class="fas fa-layer-group"></i> Etapa: ${lot.etapa_nombre}</div>` : ''}
+                        </div>
+                        <div class="lot-price">
+                            ${UI.currency(lot.valor)}
+                            <span>/ ${lot.num_cuotas} cuotas de ${UI.currency(lot.valor_cuota)}</span>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%">
+                            <i class="fas fa-info-circle"></i> Ver Detalle
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            grid.innerHTML = `<div class="empty-state"><div class="icon">❌</div><h3>Error al cargar lotes</h3><p>${error.message}</p></div>`;
+        }
+    }
+
+    async function showLotDetail(id) {
+        UI.openModal('modal-lot');
+        const content = document.getElementById('modal-lot-content');
+        try {
+            const res = await API.lots.getById(id);
+            const lot = res.data;
+            content.innerHTML = `
+                <div style="display:grid;gap:1rem;">
+                    <div style="background:var(--primary-light);padding:1.2rem;border-radius:10px;">
+                        <h3 style="color:var(--primary);margin-bottom:0.5rem;">${lot.codigo}</h3>
+                        <p style="color:var(--gray);">${lot.descripcion || 'Sin descripción'}</p>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div><strong>Área:</strong><br>${lot.area} m²</div>
+                        <div><strong>Estado:</strong><br>${UI.statusBadge(lot.estado)}</div>
+                        <div><strong>Ubicación:</strong><br>${lot.ubicacion}</div>
+                        <div><strong>Etapa:</strong><br>${lot.etapa_nombre || 'N/A'}</div>
+                        <div><strong>Valor Total:</strong><br><strong style="color:var(--primary);">${UI.currency(lot.valor)}</strong></div>
+                        <div><strong>Cuota Mensual:</strong><br><strong style="color:var(--success);">${UI.currency(lot.valor_cuota)}</strong></div>
+                    </div>
+                    <p style="font-size:0.85rem;color:var(--gray);text-align:center;">${lot.num_cuotas} cuotas mensuales</p>
+                </div>
+            `;
+            // Si el lote está disponible y hay sesión, habilitar compra
+            const btnComprar = document.getElementById('btn-comprar');
+            if (lot.estado === 'Disponible' && Auth.isLoggedIn()) {
+                btnComprar.href = '#';
+                btnComprar.onclick = () => { UI.closeModal('modal-lot'); buyLot(lot.id); };
+            } else {
+                btnComprar.href = '/pages/login.html';
+                btnComprar.onclick = null;
+            }
+        } catch (e) {
+            content.innerHTML = '<p>Error al cargar detalle</p>';
+        }
+    }
+
+    async function buyLot(loteId) {
+        if (!Auth.requireAuth()) return;
+        if (!UI.confirm('¿Confirma la compra de este lote?')) return;
+        UI.showLoading();
+        try {
+            const res = await API.purchases.create({ lote_id: loteId, num_cuotas: 12 });
+            UI.hideLoading();
+            UI.toast('¡Compra registrada! Revisa tu estado de cuenta.', 'success');
+            setTimeout(() => window.location.href = '/pages/dashboard.html', 2000);
+        } catch (e) {
+            UI.hideLoading();
+            UI.toast(e.message, 'error');
+        }
+    }
+
+    // Cargar etapas
+    async function loadStages() {
+        const container = document.getElementById('stages-container');
+        try {
+            const res = await API.stages.all();
+            const stages = res.data;
+            const today = new Date();
+            
+            container.innerHTML = `
+                <div class="stages-timeline" style="padding:2rem 0;">
+                    ${stages.map((s, i) => {
+                        const inicio = s.fecha_inicio ? new Date(s.fecha_inicio) : null;
+                        const fin = s.fecha_fin ? new Date(s.fecha_fin) : null;
+                        let cls = '';
+                        if (fin && today > fin) cls = 'completed';
+                        else if (inicio && today >= inicio) cls = 'active';
+
+                        return `
+                        <div class="stage-item ${cls}">
+                            <div class="stage-dot">${cls === 'completed' ? '✓' : (i + 1)}</div>
+                            <div class="stage-title">${s.nombre}</div>
+                            <div style="font-size:0.82rem;color:var(--gray);margin:0.5rem 0;">${s.descripcion || ''}</div>
+                            <div class="stage-date">
+                                ${s.fecha_inicio ? UI.date(s.fecha_inicio) : ''} - 
+                                ${s.fecha_fin ? UI.date(s.fecha_fin) : ''}
+                            </div>
+                            <div style="margin-top:0.5rem;font-size:0.8rem;font-weight:600;color:var(--primary);">
+                                ${s.num_lotes} lotes
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+                <div style="text-align:center;margin-top:2rem;">
+                    <a href="/pages/project.html" class="btn btn-outline">
+                        <i class="fas fa-info-circle"></i> Más Información
+                    </a>
+                </div>
+            `;
+        } catch (e) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>Error al cargar etapas</h3></div>';
+        }
+    }
+
+    // Inicializar página
+    loadLots();
+    loadStages();
+</script>
+</body>
+</html>

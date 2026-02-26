@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Dashboard | LoteSystem</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<!-- NAVBAR -->
+<nav class="navbar">
+    <a href="/" class="navbar-brand">
+        <i class="fas fa-map-marked-alt"></i>
+        <span>Lote<span class="accent">System</span></span>
+    </a>
+    <div class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+    </div>
+    <div class="navbar-menu" id="navbar-menu">
+        <a href="/pages/lots.html">Lotes</a>
+        <a href="/pages/dashboard.html" class="active">Mi Cuenta</a>
+        <a href="/pages/pqrs.html">PQRS</a>
+        <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</a>
+    </div>
+</nav>
+
+<div class="dashboard-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-avatar" id="sidebar-avatar">U</div>
+            <div>
+                <div class="sidebar-user-name" id="sidebar-name">Cargando...</div>
+                <div class="sidebar-user-role">Cliente</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-title">Principal</div>
+            <div class="sidebar-nav-item">
+                <a href="#" class="active" onclick="showSection('overview')">
+                    <i class="fas fa-tachometer-alt"></i> Resumen
+                </a>
+            </div>
+            <div class="sidebar-section-title">Mis Lotes</div>
+            <div class="sidebar-nav-item">
+                <a href="#" onclick="showSection('my-lots')">
+                    <i class="fas fa-map"></i> Mis Compras
+                </a>
+            </div>
+            <div class="sidebar-nav-item">
+                <a href="/pages/lots.html">
+                    <i class="fas fa-search"></i> Ver Lotes Disponibles
+                </a>
+            </div>
+            <div class="sidebar-section-title">Pagos</div>
+            <div class="sidebar-nav-item">
+                <a href="#" onclick="showSection('make-payment')">
+                    <i class="fas fa-credit-card"></i> Registrar Pago
+                </a>
+            </div>
+            <div class="sidebar-nav-item">
+                <a href="#" onclick="showSection('payment-history')">
+                    <i class="fas fa-history"></i> Historial de Pagos
+                </a>
+            </div>
+            <div class="sidebar-nav-item">
+                <a href="#" onclick="showSection('account-statement')">
+                    <i class="fas fa-file-invoice"></i> Estado de Cuenta
+                </a>
+            </div>
+            <div class="sidebar-section-title">Soporte</div>
+            <div class="sidebar-nav-item">
+                <a href="#" onclick="showSection('pqrs')">
+                    <i class="fas fa-comments"></i> PQRS
+                </a>
+            </div>
+            <div class="sidebar-section-title">Cuenta</div>
+            <div class="sidebar-nav-item">
+                <a href="#" onclick="showSection('profile')">
+                    <i class="fas fa-user-edit"></i> Mi Perfil
+                </a>
+            </div>
+            <div class="sidebar-nav-item">
+                <a href="#" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
+        </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- MAIN -->
+    <main class="main-content">
+        <!-- RESUMEN -->
+        <div id="section-overview">
+            <h1 style="margin-bottom:0.3rem;">¡Bienvenido, <span id="welcome-name">...</span>!</h1>
+            <p style="color:var(--gray);margin-bottom:2rem;">Aquí tienes un resumen de tu actividad</p>
+
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-map"></i></div>
+                    <div><div class="stat-value" id="stat-compras">-</div><div class="stat-label">Mis Compras</div></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                    <div><div class="stat-value" id="stat-pagados">-</div><div class="stat-label">Pagos Realizados</div></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="fas fa-dollar-sign"></i></div>
+                    <div><div class="stat-value" id="stat-pagado">-</div><div class="stat-label">Total Pagado</div></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red"><i class="fas fa-hourglass-half"></i></div>
+                    <div><div class="stat-value" id="stat-saldo">-</div><div class="stat-label">Saldo Pendiente</div></div>
+                </div>
+            </div>
+
+            <!-- Mis compras recientes -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-shopping-cart"></i> Mis Compras Recientes</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showSection('my-lots')">Ver Todas</button>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table id="recent-purchases-table">
+                        <thead>
+                            <tr>
+                                <th>Lote</th>
+                                <th>Ubicación</th>
+                                <th>Valor Total</th>
+                                <th>Cuotas</th>
+                                <th>Progreso</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-purchases-body">
+                            <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray);">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- MIS COMPRAS -->
+        <div id="section-my-lots" style="display:none;">
+            <h2 style="margin-bottom:1.5rem;"><i class="fas fa-map"></i> Mis Compras</h2>
+            <div id="my-lots-container">
+                <div class="empty-state"><div class="icon">⏳</div><h3>Cargando...</h3></div>
+            </div>
+        </div>
+
+        <!-- REGISTRAR PAGO -->
+        <div id="section-make-payment" style="display:none;">
+            <h2 style="margin-bottom:1.5rem;"><i class="fas fa-credit-card"></i> Registrar Pago</h2>
+            <div style="max-width:600px;">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="payment-alert"></div>
+                        <form id="payment-form">
+                            <div class="form-group">
+                                <label class="form-label">Seleccionar Compra *</label>
+                                <select class="form-control form-select" id="pay-compra-id" required>
+                                    <option value="">-- Selecciona una compra --</option>
+                                </select>
+                            </div>
+                            <div id="purchase-summary" style="display:none;background:var(--primary-light);padding:1rem;border-radius:8px;margin-bottom:1.5rem;">
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.9rem;">
+                                    <div><strong>Total:</strong> <span id="pay-total"></span></div>
+                                    <div><strong>Pagado:</strong> <span id="pay-pagado"></span></div>
+                                    <div><strong>Pendiente:</strong> <span id="pay-pendiente"></span></div>
+                                    <div><strong>Cuota #:</strong> <span id="pay-num-cuota"></span></div>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Monto a Pagar *</label>
+                                    <input type="number" class="form-control" id="pay-monto" placeholder="0.00" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Fecha de Pago *</label>
+                                    <input type="date" class="form-control" id="pay-fecha" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Método de Pago *</label>
+                                    <select class="form-control form-select" id="pay-metodo" required>
+                                        <option value="Transferencia">Transferencia</option>
+                                        <option value="Efectivo">Efectivo</option>
+                                        <option value="Tarjeta">Tarjeta</option>
+                                        <option value="Cheque">Cheque</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Referencia</label>
+                                    <input type="text" class="form-control" id="pay-referencia" placeholder="Número de referencia">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Notas (opcional)</label>
+                                <textarea class="form-control" id="pay-notas" rows="2" placeholder="Observaciones..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;">
+                                <i class="fas fa-save"></i> Registrar Pago y Enviar Comprobante
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORIAL DE PAGOS -->
+        <div id="section-payment-history" style="display:none;">
+            <h2 style="margin-bottom:1.5rem;"><i class="fas fa-history"></i> Historial de Pagos</h2>
+            <div class="table-container">
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Lote</th>
+                                <th>Cuota</th>
+                                <th>Monto</th>
+                                <th>Fecha</th>
+                                <th>Método</th>
+                                <th>Referencia</th>
+                                <th>Comprobante</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payment-history-body">
+                            <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray);">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ESTADO DE CUENTA -->
+        <div id="section-account-statement" style="display:none;">
+            <h2 style="margin-bottom:1.5rem;"><i class="fas fa-file-invoice"></i> Estado de Cuenta</h2>
+            <div id="account-statement-content">
+                <div class="empty-state"><div class="icon">⏳</div><h3>Cargando...</h3></div>
+            </div>
+        </div>
+
+        <!-- PQRS -->
+        <div id="section-pqrs" style="display:none;">
+            <h2 style="margin-bottom:1.5rem;"><i class="fas fa-comments"></i> PQRS</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;">
+                <!-- Formulario nueva PQRS -->
+                <div class="card">
+                    <div class="card-header">📝 Nueva PQRS</div>
+                    <div class="card-body">
+                        <div id="pqrs-alert"></div>
+                        <form id="pqrs-form">
+                            <div class="form-group">
+                                <label class="form-label">Tipo *</label>
+                                <select class="form-control form-select" id="pqrs-tipo" required>
+                                    <option value="Peticion">📋 Petición</option>
+                                    <option value="Queja">😤 Queja</option>
+                                    <option value="Reclamo">⚠️ Reclamo</option>
+                                    <option value="Sugerencia">💡 Sugerencia</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Asunto *</label>
+                                <input type="text" class="form-control" id="pqrs-asunto" placeholder="Resumen del asunto" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Descripción *</label>
+                                <textarea class="form-control" id="pqrs-descripcion" rows="5" placeholder="Describe detalladamente tu solicitud..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                                <i class="fas fa-paper-plane"></i> Enviar PQRS
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <!-- Mis PQRS -->
+                <div>
+                    <div class="table-container">
+                        <div class="table-header"><h3>Mis PQRS Enviadas</h3></div>
+                        <div id="my-pqrs-list" style="padding:1rem;">
+                            <div class="empty-state"><div class="icon">⏳</div><h3>Cargando...</h3></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERFIL -->
+        <div id="section-profile" style="display:none;">
+            <h2 style="margin-bottom:1.5rem;"><i class="fas fa-user-edit"></i> Mi Perfil</h2>
+            <div style="max-width:500px;">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="profile-alert"></div>
+                        <form id="profile-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Nombre *</label>
+                                    <input type="text" class="form-control" id="prof-nombre" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Apellido *</label>
+                                    <input type="text" class="form-control" id="prof-apellido" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="prof-email" disabled style="background:var(--light);">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="tel" class="form-control" id="prof-telefono">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Cédula</label>
+                                    <input type="text" class="form-control" id="prof-cedula" disabled style="background:var(--light);">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Dirección</label>
+                                <input type="text" class="form-control" id="prof-direccion" placeholder="Tu dirección">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+    // Verificar autenticación
+    Auth.requireAuth();
+    
+    const user = Auth.getUser();
+    if (user) {
+        document.getElementById('welcome-name').textContent = user.nombre;
+        document.getElementById('sidebar-name').textContent = `${user.nombre} ${user.apellido}`;
+        document.getElementById('sidebar-avatar').textContent = user.nombre[0].toUpperCase();
+    }
+
+    // Redirigir admins
+    if (Auth.isAdmin()) window.location.href = '/pages/admin-dashboard.html';
+
+    // Hamburger sidebar
+    document.getElementById('hamburger').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('sidebar-overlay').classList.toggle('active');
+    });
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebar-overlay').classList.remove('active');
+    }
+
+    // Mostrar secciones
+    function showSection(name) {
+        document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
+        document.getElementById(`section-${name}`).style.display = 'block';
+        document.querySelectorAll('.sidebar-nav-item a').forEach(a => a.classList.remove('active'));
+        closeSidebar();
+        
+        // Cargar datos según sección
+        const loaders = {
+            'overview': loadOverview,
+            'my-lots': loadMyLots,
+            'make-payment': loadPaymentForm,
+            'payment-history': loadPaymentHistory,
+            'account-statement': loadAccountStatement,
+            'pqrs': loadPQRS,
+            'profile': loadProfile,
+        };
+        if (loaders[name]) loaders[name]();
+    }
+
+    // ── Cargar resumen ─────────────────────────────────────────
+    async function loadOverview() {
+        try {
+            const [acct, payments] = await Promise.all([
+                API.purchases.account(),
+                API.payments.my()
+            ]);
+            const r = acct.data.resumen;
+            document.getElementById('stat-compras').textContent = r.num_compras || 0;
+            document.getElementById('stat-pagados').textContent = payments.data.length || 0;
+            document.getElementById('stat-pagado').textContent = UI.currency(r.pagado_total || 0);
+            document.getElementById('stat-saldo').textContent = UI.currency(r.saldo_total || 0);
+
+            // Tabla reciente
+            const body = document.getElementById('recent-purchases-body');
+            if (!acct.data.compras.length) {
+                body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--gray);">No tienes compras aún. <a href="/pages/lots.html">Ver lotes disponibles</a></td></tr>';
+                return;
+            }
+            body.innerHTML = acct.data.compras.map(c => `
+                <tr>
+                    <td><strong>${c.lote_codigo}</strong></td>
+                    <td>${c.ubicacion}</td>
+                    <td>${UI.currency(c.valor_total)}</td>
+                    <td>${c.cuotas_pagadas}/${c.num_cuotas}</td>
+                    <td>
+                        <div style="min-width:100px;">
+                            <div class="progress">
+                                <div class="progress-bar ${c.estado === 'Completado' ? 'success' : ''}" 
+                                     style="width:${Math.round((c.cuotas_pagadas/c.num_cuotas)*100)}%"></div>
+                            </div>
+                            <small style="color:var(--gray)">${Math.round((c.cuotas_pagadas/c.num_cuotas)*100)}%</small>
+                        </div>
+                    </td>
+                    <td>${UI.statusBadge(c.estado)}</td>
+                </tr>
+            `).join('');
+        } catch (e) {
+            UI.toast('Error al cargar resumen', 'error');
+        }
+    }
+
+    // ── Cargar mis compras ─────────────────────────────────────
+    async function loadMyLots() {
+        const container = document.getElementById('my-lots-container');
+        try {
+            const res = await API.purchases.my();
+            if (!res.data.length) {
+                container.innerHTML = `<div class="empty-state"><div class="icon">🏗️</div><h3>No tienes compras</h3><p>Visita nuestra galería de lotes disponibles</p><a href="/pages/lots.html" class="btn btn-primary" style="margin-top:1rem;">Ver Lotes</a></div>`;
+                return;
+            }
+            container.innerHTML = `<div class="lots-grid">${res.data.map(c => `
+                <div class="lot-card">
+                    <div class="lot-card-img" style="background:linear-gradient(135deg,#2c7be5,#6f42c1)">
+                        <span class="lot-icon">🏗️</span>
+                        <div class="lot-badge badge-${c.estado.toLowerCase()}">${c.estado}</div>
+                    </div>
+                    <div class="lot-card-body">
+                        <h3>${c.lote_codigo}</h3>
+                        <div class="lot-info">
+                            <div class="lot-info-item"><i class="fas fa-map-marker-alt"></i> ${c.ubicacion}</div>
+                            <div class="lot-info-item"><i class="fas fa-vector-square"></i> ${c.area} m²</div>
+                        </div>
+                        <div style="margin:1rem 0;">
+                            <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px;">
+                                <span>Cuotas: ${c.cuotas_pagadas}/${c.num_cuotas}</span>
+                                <span>${Math.round((c.cuotas_pagadas/c.num_cuotas)*100)}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar ${c.estado === 'Completado' ? 'success' : ''}" 
+                                     style="width:${Math.round((c.cuotas_pagadas/c.num_cuotas)*100)}%"></div>
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.85rem;margin-bottom:1rem;">
+                            <div><strong>Pagado:</strong><br><span style="color:var(--success)">${UI.currency(c.total_pagado)}</span></div>
+                            <div><strong>Pendiente:</strong><br><span style="color:var(--danger)">${UI.currency(c.saldo_pendiente)}</span></div>
+                        </div>
+                        ${c.estado !== 'Completado' ? `
+                        <button class="btn btn-success btn-sm" style="width:100%;justify-content:center;" 
+                                onclick="quickPay(${c.id}, ${c.valor_cuota}, '${c.lote_codigo}')">
+                            <i class="fas fa-credit-card"></i> Pagar Cuota
+                        </button>` : `
+                        <div class="alert alert-success" style="padding:8px;text-align:center;">✅ Pagado completamente</div>`}
+                    </div>
+                </div>
+            `).join('')}</div>`;
+        } catch (e) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>Error al cargar compras</h3></div>';
+        }
+    }
+
+    // ── Cargar formulario de pago ──────────────────────────────
+    async function loadPaymentForm() {
+        // Fecha de hoy por defecto
+        document.getElementById('pay-fecha').value = new Date().toISOString().split('T')[0];
+        
+        try {
+            const res = await API.purchases.my();
+            const select = document.getElementById('pay-compra-id');
+            select.innerHTML = '<option value="">-- Selecciona una compra --</option>';
+            res.data.filter(c => c.estado !== 'Completado').forEach(c => {
+                select.innerHTML += `<option value="${c.id}" 
+                    data-total="${c.valor_total}" 
+                    data-pagado="${c.total_pagado}" 
+                    data-pendiente="${c.saldo_pendiente}"
+                    data-cuota-num="${c.cuotas_pagadas + 1}"
+                    data-cuota-valor="${c.valor_cuota}">
+                    Lote ${c.lote_codigo} - Pendiente: ${UI.currency(c.saldo_pendiente)}
+                </option>`;
+            });
+        } catch (e) {}
+
+        document.getElementById('pay-compra-id').onchange = function() {
+            const opt = this.options[this.selectedIndex];
+            const summary = document.getElementById('purchase-summary');
+            if (this.value) {
+                summary.style.display = 'block';
+                document.getElementById('pay-total').textContent = UI.currency(opt.dataset.total);
+                document.getElementById('pay-pagado').textContent = UI.currency(opt.dataset.pagado);
+                document.getElementById('pay-pendiente').textContent = UI.currency(opt.dataset.pendiente);
+                document.getElementById('pay-num-cuota').textContent = opt.dataset.cuotaNum;
+                document.getElementById('pay-monto').value = parseFloat(opt.dataset.cuotaValor).toFixed(0);
+            } else {
+                summary.style.display = 'none';
+            }
+        };
+    }
+
+    function quickPay(compraId, monto, codigo) {
+        showSection('make-payment');
+        setTimeout(() => {
+            const sel = document.getElementById('pay-compra-id');
+            sel.value = compraId;
+            sel.dispatchEvent(new Event('change'));
+        }, 300);
+    }
+
+    document.getElementById('payment-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const alertEl = document.getElementById('payment-alert');
+        const compra_id = document.getElementById('pay-compra-id').value;
+        const monto = document.getElementById('pay-monto').value;
+        const fecha_pago = document.getElementById('pay-fecha').value;
+        const metodo_pago = document.getElementById('pay-metodo').value;
+        const referencia = document.getElementById('pay-referencia').value;
+        const notas = document.getElementById('pay-notas').value;
+
+        if (!compra_id || !monto) {
+            alertEl.innerHTML = '<div class="alert alert-danger">Por favor completa los campos requeridos</div>';
+            return;
+        }
+        UI.showLoading();
+        try {
+            const res = await API.payments.create({ compra_id, monto, fecha_pago, metodo_pago, referencia, notas });
+            UI.hideLoading();
+            alertEl.innerHTML = `<div class="alert alert-success">✅ Pago registrado. ${res.data.correo_enviado ? '📧 Comprobante enviado por correo.' : ''}</div>`;
+            document.getElementById('payment-form').reset();
+            document.getElementById('purchase-summary').style.display = 'none';
+            loadOverview();
+        } catch (e) {
+            UI.hideLoading();
+            alertEl.innerHTML = `<div class="alert alert-danger">❌ ${e.message}</div>`;
+        }
+    });
+
+    // ── Historial de pagos ─────────────────────────────────────
+    async function loadPaymentHistory() {
+        const body = document.getElementById('payment-history-body');
+        try {
+            const res = await API.payments.my();
+            if (!res.data.length) {
+                body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray);">No hay pagos registrados</td></tr>';
+                return;
+            }
+            body.innerHTML = res.data.map(p => `
+                <tr>
+                    <td>${p.id}</td>
+                    <td><strong>${p.lote_codigo}</strong></td>
+                    <td>Cuota #${p.numero_cuota}</td>
+                    <td><strong>${UI.currency(p.monto)}</strong></td>
+                    <td>${UI.date(p.fecha_pago)}</td>
+                    <td>${p.metodo_pago}</td>
+                    <td>${p.referencia || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="API.payments.downloadReceipt(${p.id})" title="Descargar PDF">
+                            <i class="fas fa-file-pdf"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (e) {
+            body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error al cargar</td></tr>';
+        }
+    }
+
+    // ── Estado de cuenta ───────────────────────────────────────
+    async function loadAccountStatement() {
+        const container = document.getElementById('account-statement-content');
+        try {
+            const res = await API.purchases.account();
+            const r = res.data.resumen;
+            container.innerHTML = `
+                <div class="stats-grid" style="margin-bottom:2rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-file-invoice-dollar"></i></div>
+                        <div><div class="stat-value">${UI.currency(r.deuda_total || 0)}</div><div class="stat-label">Deuda Total</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div><div class="stat-value">${UI.currency(r.pagado_total || 0)}</div><div class="stat-label">Total Pagado</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red"><i class="fas fa-hourglass-half"></i></div>
+                        <div><div class="stat-value">${UI.currency(r.saldo_total || 0)}</div><div class="stat-label">Saldo Pendiente</div></div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <div class="table-header"><h3>Detalle por Lote</h3></div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead><tr><th>Lote</th><th>Ubicación</th><th>Valor Total</th><th>Pagado</th><th>Pendiente</th><th>Cuotas</th><th>Estado</th></tr></thead>
+                            <tbody>
+                                ${res.data.compras.map(c => `
+                                <tr>
+                                    <td><strong>${c.lote_codigo}</strong></td>
+                                    <td>${c.ubicacion}</td>
+                                    <td>${UI.currency(c.valor_total)}</td>
+                                    <td style="color:var(--success);font-weight:600;">${UI.currency(c.total_pagado)}</td>
+                                    <td style="color:var(--danger);font-weight:600;">${UI.currency(c.saldo_pendiente)}</td>
+                                    <td>${c.cuotas_pagadas}/${c.num_cuotas}</td>
+                                    <td>${UI.statusBadge(c.estado)}</td>
+                                </tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        } catch (e) {
+            container.innerHTML = '<div class="empty-state"><div class="icon">❌</div><h3>Error al cargar</h3></div>';
+        }
+    }
+
+    // ── PQRS ───────────────────────────────────────────────────
+    async function loadPQRS() {
+        try {
+            const res = await API.pqrs.my();
+            const list = document.getElementById('my-pqrs-list');
+            if (!res.data.length) {
+                list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><h3>No tienes PQRS</h3></div>';
+                return;
+            }
+            list.innerHTML = res.data.map(p => `
+                <div style="border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                        <div>
+                            <span class="badge badge-primary">${p.tipo}</span>
+                            <strong style="margin-left:8px;">${p.asunto}</strong>
+                        </div>
+                        ${UI.statusBadge(p.estado)}
+                    </div>
+                    <p style="color:var(--gray);font-size:0.85rem;margin:0.5rem 0;">${p.descripcion.substring(0, 100)}...</p>
+                    ${p.respuesta ? `<div style="background:var(--light);padding:0.7rem;border-radius:6px;font-size:0.85rem;margin-top:0.5rem;"><strong>Respuesta:</strong> ${p.respuesta}</div>` : ''}
+                    <small style="color:var(--gray);">${UI.date(p.created_at)}</small>
+                </div>
+            `).join('');
+        } catch (e) {}
+    }
+
+    document.getElementById('pqrs-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const alertEl = document.getElementById('pqrs-alert');
+        UI.showLoading();
+        try {
+            await API.pqrs.create({
+                tipo: document.getElementById('pqrs-tipo').value,
+                asunto: document.getElementById('pqrs-asunto').value,
+                descripcion: document.getElementById('pqrs-descripcion').value
+            });
+            UI.hideLoading();
+            alertEl.innerHTML = '<div class="alert alert-success">✅ PQRS enviada exitosamente</div>';
+            document.getElementById('pqrs-form').reset();
+            loadPQRS();
+        } catch (e) {
+            UI.hideLoading();
+            alertEl.innerHTML = `<div class="alert alert-danger">❌ ${e.message}</div>`;
+        }
+    });
+
+    // ── Perfil ─────────────────────────────────────────────────
+    async function loadProfile() {
+        try {
+            const res = await API.auth.profile();
+            const u = res.user;
+            document.getElementById('prof-nombre').value = u.nombre;
+            document.getElementById('prof-apellido').value = u.apellido;
+            document.getElementById('prof-email').value = u.email;
+            document.getElementById('prof-telefono').value = u.telefono || '';
+            document.getElementById('prof-cedula').value = u.cedula || '';
+            document.getElementById('prof-direccion').value = u.direccion || '';
+        } catch (e) {}
+    }
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const alertEl = document.getElementById('profile-alert');
+        UI.showLoading();
+        try {
+            await API.auth.updateProfile({
+                nombre: document.getElementById('prof-nombre').value,
+                apellido: document.getElementById('prof-apellido').value,
+                telefono: document.getElementById('prof-telefono').value,
+                direccion: document.getElementById('prof-direccion').value
+            });
+            UI.hideLoading();
+            alertEl.innerHTML = '<div class="alert alert-success">✅ Perfil actualizado</div>';
+        } catch (e) {
+            UI.hideLoading();
+            alertEl.innerHTML = `<div class="alert alert-danger">❌ ${e.message}</div>`;
+        }
+    });
+
+    // Cargar overview al iniciar
+    loadOverview();
+</script>
+</body>
+</html>

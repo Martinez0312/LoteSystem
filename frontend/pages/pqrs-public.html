@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQRS | LoteSystem</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar">
+    <a href="/" class="navbar-brand"><i class="fas fa-map-marked-alt"></i> <span>Lote<span class="accent">System</span></span></a>
+    <div class="hamburger"><span></span><span></span><span></span></div>
+    <div class="navbar-menu">
+        <a href="../index.html">Inicio</a><a href="lots.html">Lotes</a>
+        <a href="pqrs-public.html" class="active">PQRS</a>
+        <div id="user-menu" style="display:flex;gap:1rem;align-items:center;"></div>
+    </div>
+</nav>
+
+<div style="padding:100px 2rem 60px;max-width:1000px;margin:0 auto;">
+    <div class="section-title">
+        <h1>Sistema PQRS</h1>
+        <div class="title-line"></div>
+        <p>Peticiones, Quejas, Reclamos y Sugerencias. Tu opinión es importante para nosotros.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:3rem;align-items:start;">
+        <!-- Info cards -->
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div style="background:white;padding:1.5rem;border-radius:16px;box-shadow:var(--shadow);border-left:5px solid var(--primary);">
+                <div style="font-size:1.5rem;margin-bottom:0.5rem;">📋</div>
+                <h4>Petición</h4>
+                <p style="color:var(--gray);font-size:0.88rem;">Solicita información, documentos o trámites relacionados con tu lote.</p>
+            </div>
+            <div style="background:white;padding:1.5rem;border-radius:16px;box-shadow:var(--shadow);border-left:5px solid var(--danger);">
+                <div style="font-size:1.5rem;margin-bottom:0.5rem;">😤</div>
+                <h4>Queja</h4>
+                <p style="color:var(--gray);font-size:0.88rem;">Manifiesta tu insatisfacción con el servicio o atención recibida.</p>
+            </div>
+            <div style="background:white;padding:1.5rem;border-radius:16px;box-shadow:var(--shadow);border-left:5px solid var(--warning);">
+                <div style="font-size:1.5rem;margin-bottom:0.5rem;">⚠️</div>
+                <h4>Reclamo</h4>
+                <p style="color:var(--gray);font-size:0.88rem;">Exige una solución por incumplimiento o falla en el servicio.</p>
+            </div>
+            <div style="background:white;padding:1.5rem;border-radius:16px;box-shadow:var(--shadow);border-left:5px solid var(--success);">
+                <div style="font-size:1.5rem;margin-bottom:0.5rem;">💡</div>
+                <h4>Sugerencia</h4>
+                <p style="color:var(--gray);font-size:0.88rem;">Comparte ideas para mejorar nuestros servicios y atención.</p>
+            </div>
+        </div>
+
+        <!-- Formulario -->
+        <div class="card">
+            <div class="card-header">📝 Enviar PQRS</div>
+            <div class="card-body">
+                <div id="alert-container"></div>
+
+                <div id="login-required" style="display:none;">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Para enviar una PQRS debes iniciar sesión.
+                    </div>
+                    <div style="display:flex;gap:1rem;margin-top:1rem;">
+                        <a href="login.html" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Ingresar</a>
+                        <a href="/pages/register.html" class="btn btn-outline">Registrarme</a>
+                    </div>
+                </div>
+
+                <form id="pqrs-form">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de PQRS *</label>
+                        <select class="form-control form-select" id="tipo" required>
+                            <option value="Peticion">📋 Petición</option>
+                            <option value="Queja">😤 Queja</option>
+                            <option value="Reclamo">⚠️ Reclamo</option>
+                            <option value="Sugerencia">💡 Sugerencia</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Asunto *</label>
+                        <input type="text" class="form-control" id="asunto" placeholder="Resumen breve del asunto" required maxlength="255">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descripción Detallada *</label>
+                        <textarea class="form-control" id="descripcion" rows="6" placeholder="Describe en detalle tu petición, queja, reclamo o sugerencia..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                        <i class="fas fa-paper-plane"></i> Enviar PQRS
+                    </button>
+                </form>
+
+                <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+                    <p style="font-size:0.85rem;color:var(--gray);"><i class="fas fa-clock"></i> Tiempo de respuesta: máximo 15 días hábiles</p>
+                    <p style="font-size:0.85rem;color:var(--gray);"><i class="fas fa-eye"></i> Puedes hacer seguimiento desde tu <a href="/pages/dashboard.html">dashboard</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+if (!Auth.isLoggedIn()) {
+    document.getElementById('pqrs-form').style.display = 'none';
+    document.getElementById('login-required').style.display = 'block';
+}
+
+document.getElementById('pqrs-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const alertEl = document.getElementById('alert-container');
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    try {
+        await API.pqrs.create({
+            tipo: document.getElementById('tipo').value,
+            asunto: document.getElementById('asunto').value,
+            descripcion: document.getElementById('descripcion').value
+        });
+        alertEl.innerHTML = '<div class="alert alert-success">✅ PQRS enviada exitosamente. Recibirás una respuesta pronto. Consulta el estado en tu <a href="/pages/dashboard.html">dashboard</a>.</div>';
+        document.getElementById('pqrs-form').reset();
+        btn.style.display = 'none';
+    } catch (e) {
+        alertEl.innerHTML = `<div class="alert alert-danger">❌ ${e.message}</div>`;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar PQRS';
+    }
+});
+</script>
+</body>
+</html>

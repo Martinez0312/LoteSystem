@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin | LoteSystem</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<nav class="navbar">
+    <a href="/" class="navbar-brand">
+        <i class="fas fa-map-marked-alt"></i>
+        <span>Lote<span class="accent">System</span></span>
+        <span style="background:var(--secondary);color:white;font-size:0.7rem;padding:2px 8px;border-radius:10px;margin-left:5px;">ADMIN</span>
+    </a>
+    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    <div class="navbar-menu" id="navbar-menu">
+        <a href="/" target="_blank">Ver Sitio</a>
+        <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Salir</a>
+    </div>
+</nav>
+
+<div class="dashboard-layout">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-avatar" style="background:var(--secondary);">A</div>
+            <div>
+                <div class="sidebar-user-name" id="sidebar-name">Administrador</div>
+                <div class="sidebar-user-role" style="color:var(--secondary);">Panel Admin</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-title">Dashboard</div>
+            <div class="sidebar-nav-item"><a href="#" class="active" onclick="showSection('dashboard')"><i class="fas fa-tachometer-alt"></i> Resumen General</a></div>
+            <div class="sidebar-section-title">Gestión</div>
+            <div class="sidebar-nav-item"><a href="#" onclick="showSection('lots')"><i class="fas fa-map"></i> Lotes</a></div>
+            <div class="sidebar-nav-item"><a href="#" onclick="showSection('users')"><i class="fas fa-users"></i> Clientes</a></div>
+            <div class="sidebar-nav-item"><a href="#" onclick="showSection('purchases')"><i class="fas fa-shopping-cart"></i> Compras</a></div>
+            <div class="sidebar-nav-item"><a href="#" onclick="showSection('payments')"><i class="fas fa-money-bill-wave"></i> Pagos</a></div>
+            <div class="sidebar-section-title">Soporte</div>
+            <div class="sidebar-nav-item"><a href="#" onclick="showSection('pqrs')"><i class="fas fa-comments"></i> PQRS</a></div>
+            <div class="sidebar-section-title">Config</div>
+            <div class="sidebar-nav-item"><a href="#" onclick="showSection('stages')"><i class="fas fa-layer-group"></i> Etapas</a></div>
+        </nav>
+    </aside>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <main class="main-content">
+        <!-- DASHBOARD -->
+        <div id="section-dashboard">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
+                <div><h1>Panel de Control</h1><p style="color:var(--gray);">Bienvenido al sistema de administración</p></div>
+                <span id="current-date" style="color:var(--gray);"></span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-users"></i></div><div><div class="stat-value" id="s-clientes">-</div><div class="stat-label">Clientes</div></div></div>
+                <div class="stat-card"><div class="stat-icon green"><i class="fas fa-map"></i></div><div><div class="stat-value" id="s-disponibles">-</div><div class="stat-label">Lotes Disponibles</div></div></div>
+                <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-shopping-cart"></i></div><div><div class="stat-value" id="s-compras">-</div><div class="stat-label">Compras</div></div></div>
+                <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-value" id="s-recaudado">-</div><div class="stat-label">Recaudado</div></div></div>
+                <div class="stat-card"><div class="stat-icon red"><i class="fas fa-comments"></i></div><div><div class="stat-value" id="s-pqrs">-</div><div class="stat-label">PQRS Pendientes</div></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:2rem;">
+                <div class="table-container">
+                    <div class="table-header"><h3>Pagos Recientes</h3><button class="btn btn-sm btn-outline" onclick="showSection('payments')">Ver Todos</button></div>
+                    <table><thead><tr><th>Cliente</th><th>Lote</th><th>Monto</th><th>Fecha</th></tr></thead>
+                    <tbody id="recent-payments-body"><tr><td colspan="4" style="text-align:center;padding:1.5rem;color:var(--gray);">Cargando...</td></tr></tbody></table>
+                </div>
+                <div class="table-container">
+                    <div class="table-header"><h3>PQRS Pendientes</h3><button class="btn btn-sm btn-outline" onclick="showSection('pqrs')">Ver Todos</button></div>
+                    <div id="pending-pqrs" style="padding:1rem;"><div class="empty-state"><div class="icon">⏳</div><h3>Cargando...</h3></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOTES -->
+        <div id="section-lots" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                <h2><i class="fas fa-map"></i> Gestión de Lotes</h2>
+                <button class="btn btn-primary" onclick="openLotModal()"><i class="fas fa-plus"></i> Nuevo Lote</button>
+            </div>
+            <div class="table-container"><div style="overflow-x:auto;">
+                <table><thead><tr><th>Código</th><th>Área (m²)</th><th>Ubicación</th><th>Etapa</th><th>Valor</th><th>Cuota</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody id="lots-table-body"><tr><td colspan="8" style="text-align:center;padding:2rem;">Cargando...</td></tr></tbody></table>
+            </div></div>
+        </div>
+
+        <!-- CLIENTES -->
+        <div id="section-users" style="display:none;">
+            <h2 style="margin-bottom:1.5rem;"><i class="fas fa-users"></i> Clientes</h2>
+            <div class="table-container"><div style="overflow-x:auto;">
+                <table><thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Cédula</th><th>Teléfono</th><th>Registrado</th><th>Estado</th><th>Acción</th></tr></thead>
+                <tbody id="users-table-body"><tr><td colspan="8" style="text-align:center;padding:2rem;">Cargando...</td></tr></tbody></table>
+            </div></div>
+        </div>
+
+        <!-- COMPRAS -->
+        <div id="section-purchases" style="display:none;">
+            <h2 style="margin-bottom:1.5rem;"><i class="fas fa-shopping-cart"></i> Compras</h2>
+            <div class="table-container"><div style="overflow-x:auto;">
+                <table><thead><tr><th>ID</th><th>Cliente</th><th>Lote</th><th>Valor Total</th><th>Cuotas</th><th>Pagado</th><th>Pendiente</th><th>Estado</th><th>Fecha</th></tr></thead>
+                <tbody id="purchases-table-body"><tr><td colspan="9" style="text-align:center;padding:2rem;">Cargando...</td></tr></tbody></table>
+            </div></div>
+        </div>
+
+        <!-- PAGOS -->
+        <div id="section-payments" style="display:none;">
+            <h2 style="margin-bottom:1.5rem;"><i class="fas fa-money-bill-wave"></i> Todos los Pagos</h2>
+            <div class="table-container"><div style="overflow-x:auto;">
+                <table><thead><tr><th>ID</th><th>Cliente</th><th>Lote</th><th>Cuota #</th><th>Monto</th><th>Método</th><th>Referencia</th><th>Fecha</th><th>PDF</th></tr></thead>
+                <tbody id="all-payments-body"><tr><td colspan="9" style="text-align:center;padding:2rem;">Cargando...</td></tr></tbody></table>
+            </div></div>
+        </div>
+
+        <!-- PQRS -->
+        <div id="section-pqrs" style="display:none;">
+            <h2 style="margin-bottom:1.5rem;"><i class="fas fa-comments"></i> Gestión PQRS</h2>
+            <div class="filters-bar">
+                <div class="filter-group"><label>Estado</label>
+                    <select class="form-control form-select" id="pqrs-filter-estado" onchange="loadAllPQRS()">
+                        <option value="">Todos</option><option value="Pendiente">Pendiente</option>
+                        <option value="En proceso">En proceso</option><option value="Resuelto">Resuelto</option>
+                    </select>
+                </div>
+                <div class="filter-group"><label>Tipo</label>
+                    <select class="form-control form-select" id="pqrs-filter-tipo" onchange="loadAllPQRS()">
+                        <option value="">Todos</option><option value="Peticion">Petición</option>
+                        <option value="Queja">Queja</option><option value="Reclamo">Reclamo</option>
+                        <option value="Sugerencia">Sugerencia</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container"><div style="overflow-x:auto;">
+                <table><thead><tr><th>ID</th><th>Cliente</th><th>Tipo</th><th>Asunto</th><th>Estado</th><th>Fecha</th><th>Gestionar</th></tr></thead>
+                <tbody id="pqrs-table-body"><tr><td colspan="7" style="text-align:center;padding:2rem;">Cargando...</td></tr></tbody></table>
+            </div></div>
+        </div>
+
+        <!-- ETAPAS -->
+        <div id="section-stages" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                <h2><i class="fas fa-layer-group"></i> Etapas del Proyecto</h2>
+                <button class="btn btn-primary" onclick="openStageModal()"><i class="fas fa-plus"></i> Nueva Etapa</button>
+            </div>
+            <div id="stages-admin-list" class="lots-grid"></div>
+        </div>
+    </main>
+</div>
+
+<!-- MODAL LOTE -->
+<div class="modal-overlay" id="modal-lot">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="lot-modal-title"><i class="fas fa-map-pin"></i> Lote</h3>
+            <button class="modal-close" onclick="UI.closeModal('modal-lot')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="lot-form">
+                <input type="hidden" id="lot-id">
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Código *</label><input type="text" class="form-control" id="lot-codigo" required></div>
+                    <div class="form-group"><label class="form-label">Etapa</label>
+                        <select class="form-control form-select" id="lot-etapa"><option value="">Sin etapa</option></select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Área m² * (100-200)</label><input type="number" class="form-control" id="lot-area" min="100" max="200" step="0.01" required></div>
+                    <div class="form-group"><label class="form-label">Valor Total *</label><input type="number" class="form-control" id="lot-valor" min="1" required></div>
+                </div>
+                <div class="form-group"><label class="form-label">Ubicación *</label><input type="text" class="form-control" id="lot-ubicacion" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Número de Cuotas</label><input type="number" class="form-control" id="lot-cuotas" value="12" min="1" max="120"></div>
+                    <div class="form-group"><label class="form-label">Estado</label>
+                        <select class="form-control form-select" id="lot-estado">
+                            <option value="Disponible">Disponible</option>
+                            <option value="Reservado">Reservado</option>
+                            <option value="Vendido">Vendido</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="lot-descripcion" rows="2"></textarea></div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="UI.closeModal('modal-lot')">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveLot()"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PQRS -->
+<div class="modal-overlay" id="modal-pqrs">
+    <div class="modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-reply"></i> Gestionar PQRS</h3>
+            <button class="modal-close" onclick="UI.closeModal('modal-pqrs')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="pqrs-id">
+            <div id="pqrs-detail" style="background:var(--light);padding:1rem;border-radius:8px;margin-bottom:1rem;"></div>
+            <div class="form-group">
+                <label class="form-label">Cambiar Estado</label>
+                <select class="form-control form-select" id="pqrs-estado-select">
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En proceso">En proceso</option>
+                    <option value="Resuelto">Resuelto</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Respuesta al cliente</label>
+                <textarea class="form-control" id="pqrs-respuesta" rows="4" placeholder="Escribe la respuesta para el cliente..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="UI.closeModal('modal-pqrs')">Cancelar</button>
+            <button class="btn btn-primary" onclick="savePQRS()"><i class="fas fa-save"></i> Guardar Respuesta</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ETAPA -->
+<div class="modal-overlay" id="modal-stage">
+    <div class="modal">
+        <div class="modal-header">
+            <h3><i class="fas fa-layer-group"></i> Etapa del Proyecto</h3>
+            <button class="modal-close" onclick="UI.closeModal('modal-stage')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="stage-form">
+                <input type="hidden" id="stage-id">
+                <div class="form-group"><label class="form-label">Nombre *</label><input type="text" class="form-control" id="stage-nombre" required></div>
+                <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-control" id="stage-descripcion" rows="2"></textarea></div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Orden</label><input type="number" class="form-control" id="stage-orden" min="1"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label class="form-label">Fecha Inicio</label><input type="date" class="form-control" id="stage-inicio"></div>
+                    <div class="form-group"><label class="form-label">Fecha Fin</label><input type="date" class="form-control" id="stage-fin"></div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="UI.closeModal('modal-stage')">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveStage()"><i class="fas fa-save"></i> Guardar</button>
+        </div>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+    Auth.requireAdmin();
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('es-CO', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    
+    const user = Auth.getUser();
+    if (user) document.getElementById('sidebar-name').textContent = `${user.nombre} ${user.apellido}`;
+
+    document.getElementById('hamburger').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('sidebar-overlay').classList.toggle('active');
+    });
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebar-overlay').classList.remove('active');
+    }
+
+    function showSection(name) {
+        document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
+        document.getElementById('section-' + name).style.display = 'block';
+        closeSidebar();
+        const loaders = { dashboard: loadDashboard, lots: loadLots, users: loadUsers, purchases: loadPurchases, payments: loadAllPayments, pqrs: loadAllPQRS, stages: loadStages };
+        if (loaders[name]) loaders[name]();
+    }
+
+    async function loadDashboard() {
+        try {
+            const res = await API.users.dashboard();
+            const d = res.data;
+            document.getElementById('s-clientes').textContent = d.clientes || 0;
+            document.getElementById('s-disponibles').textContent = d.lotes.disponibles || 0;
+            document.getElementById('s-compras').textContent = d.compras.total || 0;
+            document.getElementById('s-recaudado').textContent = UI.currency(d.pagos.total_recaudado || 0);
+            document.getElementById('s-pqrs').textContent = d.pqrs.pendientes || 0;
+
+            const paymentsRes = await API.payments.all();
+            const tbody = document.getElementById('recent-payments-body');
+            const recent = paymentsRes.data.slice(0, 5);
+            tbody.innerHTML = recent.map(p => `<tr>
+                <td>${p.cliente_nombre} ${p.cliente_apellido}</td>
+                <td><strong>${p.lote_codigo}</strong></td>
+                <td><strong style="color:var(--success)">${UI.currency(p.monto)}</strong></td>
+                <td>${UI.date(p.fecha_pago)}</td>
+            </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--gray);">Sin pagos</td></tr>';
+
+            const pqrsRes = await API.pqrs.all({ estado: 'Pendiente' });
+            const pqrsDiv = document.getElementById('pending-pqrs');
+            if (!pqrsRes.data.length) {
+                pqrsDiv.innerHTML = '<div class="empty-state"><div class="icon">✅</div><h3>Sin PQRS pendientes</h3></div>';
+            } else {
+                pqrsDiv.innerHTML = pqrsRes.data.slice(0,4).map(p => `
+                <div style="padding:0.8rem;border-bottom:1px solid var(--border);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <span class="badge badge-warning">${p.tipo}</span>
+                        <small style="color:var(--gray)">${UI.date(p.created_at)}</small>
+                    </div>
+                    <p style="font-size:0.9rem;font-weight:600;margin:0.3rem 0;">${p.asunto}</p>
+                    <small style="color:var(--gray)">${p.cliente_nombre}</small>
+                </div>`).join('');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadLots() {
+        const tbody = document.getElementById('lots-table-body');
+        try {
+            const [lotsRes, stagesRes] = await Promise.all([API.lots.getAll(), API.stages.all()]);
+            // Cargar etapas en select del modal
+            const sel = document.getElementById('lot-etapa');
+            sel.innerHTML = '<option value="">Sin etapa</option>' + stagesRes.data.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
+            
+            if (!lotsRes.data.length) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray);">No hay lotes</td></tr>';
+                return;
+            }
+            tbody.innerHTML = lotsRes.data.map(l => `<tr>
+                <td><strong>${l.codigo}</strong></td>
+                <td>${l.area}</td>
+                <td>${l.ubicacion}</td>
+                <td>${l.etapa_nombre || '-'}</td>
+                <td>${UI.currency(l.valor)}</td>
+                <td>${UI.currency(l.valor_cuota)}</td>
+                <td>${UI.statusBadge(l.estado)}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline" onclick="editLot(${l.id})" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteLot(${l.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`).join('');
+        } catch (e) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error al cargar</td></tr>'; }
+    }
+
+    function openLotModal(lot = null) {
+        document.getElementById('lot-id').value = '';
+        document.getElementById('lot-form').reset();
+        document.getElementById('lot-modal-title').innerHTML = '<i class="fas fa-plus"></i> Nuevo Lote';
+        if (lot) {
+            document.getElementById('lot-modal-title').innerHTML = '<i class="fas fa-edit"></i> Editar Lote';
+            document.getElementById('lot-id').value = lot.id;
+            document.getElementById('lot-codigo').value = lot.codigo;
+            document.getElementById('lot-etapa').value = lot.etapa_id || '';
+            document.getElementById('lot-area').value = lot.area;
+            document.getElementById('lot-valor').value = lot.valor;
+            document.getElementById('lot-ubicacion').value = lot.ubicacion;
+            document.getElementById('lot-cuotas').value = lot.num_cuotas;
+            document.getElementById('lot-estado').value = lot.estado;
+            document.getElementById('lot-descripcion').value = lot.descripcion || '';
+        }
+        UI.openModal('modal-lot');
+    }
+
+    async function editLot(id) {
+        try { const res = await API.lots.getById(id); openLotModal(res.data); } catch (e) {}
+    }
+
+    async function saveLot() {
+        const id = document.getElementById('lot-id').value;
+        const data = {
+            codigo: document.getElementById('lot-codigo').value,
+            etapa_id: document.getElementById('lot-etapa').value || null,
+            area: parseFloat(document.getElementById('lot-area').value),
+            valor: parseFloat(document.getElementById('lot-valor').value),
+            ubicacion: document.getElementById('lot-ubicacion').value,
+            num_cuotas: parseInt(document.getElementById('lot-cuotas').value),
+            estado: document.getElementById('lot-estado').value,
+            descripcion: document.getElementById('lot-descripcion').value,
+            valor_cuota: parseFloat(document.getElementById('lot-valor').value) / parseInt(document.getElementById('lot-cuotas').value)
+        };
+        UI.showLoading();
+        try {
+            if (id) await API.lots.update(id, data);
+            else await API.lots.create(data);
+            UI.hideLoading();
+            UI.closeModal('modal-lot');
+            UI.toast(id ? 'Lote actualizado' : 'Lote creado', 'success');
+            loadLots();
+        } catch (e) { UI.hideLoading(); UI.toast(e.message, 'error'); }
+    }
+
+    async function deleteLot(id) {
+        if (!UI.confirm('¿Eliminar este lote?')) return;
+        UI.showLoading();
+        try { await API.lots.delete(id); UI.hideLoading(); UI.toast('Lote eliminado', 'success'); loadLots(); }
+        catch (e) { UI.hideLoading(); UI.toast(e.message, 'error'); }
+    }
+
+    async function loadUsers() {
+        const tbody = document.getElementById('users-table-body');
+        try {
+            const res = await API.users.all();
+            tbody.innerHTML = res.data.map(u => `<tr>
+                <td>${u.id}</td>
+                <td><strong>${u.nombre} ${u.apellido}</strong></td>
+                <td>${u.email}</td>
+                <td>${u.cedula || '-'}</td>
+                <td>${u.telefono || '-'}</td>
+                <td>${UI.date(u.created_at)}</td>
+                <td>${u.activo ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-danger">Inactivo</span>'}</td>
+                <td>
+                    <button class="btn btn-sm ${u.activo ? 'btn-warning' : 'btn-success'}" onclick="toggleUser(${u.id})">
+                        <i class="fas fa-${u.activo ? 'ban' : 'check'}"></i> ${u.activo ? 'Desactivar' : 'Activar'}
+                    </button>
+                </td>
+            </tr>`).join('');
+        } catch (e) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error</td></tr>'; }
+    }
+
+    async function toggleUser(id) {
+        if (!UI.confirm('¿Cambiar estado del usuario?')) return;
+        UI.showLoading();
+        try { const r = await API.users.toggle(id); UI.hideLoading(); UI.toast(r.message, 'success'); loadUsers(); }
+        catch (e) { UI.hideLoading(); UI.toast(e.message, 'error'); }
+    }
+
+    async function loadPurchases() {
+        const tbody = document.getElementById('purchases-table-body');
+        try {
+            const res = await API.purchases.all();
+            tbody.innerHTML = res.data.map(c => `<tr>
+                <td>${c.id}</td>
+                <td>${c.cliente_nombre} ${c.cliente_apellido}</td>
+                <td><strong>${c.lote_codigo}</strong> - ${c.ubicacion}</td>
+                <td>${UI.currency(c.valor_total)}</td>
+                <td>${c.cuotas_pagadas}/${c.num_cuotas}</td>
+                <td style="color:var(--success)">${UI.currency(c.total_pagado)}</td>
+                <td style="color:var(--danger)">${UI.currency(c.saldo_pendiente)}</td>
+                <td>${UI.statusBadge(c.estado)}</td>
+                <td>${UI.date(c.fecha_compra)}</td>
+            </tr>`).join('');
+        } catch (e) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:red;">Error</td></tr>'; }
+    }
+
+    async function loadAllPayments() {
+        const tbody = document.getElementById('all-payments-body');
+        try {
+            const res = await API.payments.all();
+            tbody.innerHTML = res.data.map(p => `<tr>
+                <td>${p.id}</td>
+                <td>${p.cliente_nombre} ${p.cliente_apellido}</td>
+                <td><strong>${p.lote_codigo}</strong></td>
+                <td>Cuota #${p.numero_cuota}</td>
+                <td><strong style="color:var(--success)">${UI.currency(p.monto)}</strong></td>
+                <td>${p.metodo_pago}</td>
+                <td>${p.referencia || '-'}</td>
+                <td>${UI.date(p.fecha_pago)}</td>
+                <td><button class="btn btn-sm btn-outline" onclick="API.payments.downloadReceipt(${p.id})" title="PDF"><i class="fas fa-file-pdf"></i></button></td>
+            </tr>`).join('');
+        } catch (e) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:red;">Error</td></tr>'; }
+    }
+
+    async function loadAllPQRS() {
+        const tbody = document.getElementById('pqrs-table-body');
+        const estado = document.getElementById('pqrs-filter-estado')?.value || '';
+        const tipo = document.getElementById('pqrs-filter-tipo')?.value || '';
+        try {
+            const res = await API.pqrs.all({ estado, tipo });
+            tbody.innerHTML = res.data.map(p => `<tr>
+                <td>${p.id}</td>
+                <td>${p.cliente_nombre}</td>
+                <td><span class="badge badge-primary">${p.tipo}</span></td>
+                <td>${p.asunto}</td>
+                <td>${UI.statusBadge(p.estado)}</td>
+                <td>${UI.date(p.created_at)}</td>
+                <td><button class="btn btn-sm btn-outline" onclick="openPQRSModal(${JSON.stringify(p).replace(/"/g,'&quot;')})"><i class="fas fa-reply"></i> Responder</button></td>
+            </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--gray);">No hay PQRS</td></tr>';
+        } catch (e) {}
+    }
+
+    function openPQRSModal(p) {
+        document.getElementById('pqrs-id').value = p.id;
+        document.getElementById('pqrs-estado-select').value = p.estado;
+        document.getElementById('pqrs-respuesta').value = p.respuesta || '';
+        document.getElementById('pqrs-detail').innerHTML = `
+            <div style="font-size:0.9rem;">
+                <p><strong>Cliente:</strong> ${p.cliente_nombre} (${p.cliente_email})</p>
+                <p><strong>Tipo:</strong> ${p.tipo} | <strong>Asunto:</strong> ${p.asunto}</p>
+                <p style="margin-top:0.5rem;color:var(--gray);">${p.descripcion}</p>
+            </div>
+        `;
+        UI.openModal('modal-pqrs');
+    }
+
+    async function savePQRS() {
+        const id = document.getElementById('pqrs-id').value;
+        UI.showLoading();
+        try {
+            await API.pqrs.update(id, {
+                estado: document.getElementById('pqrs-estado-select').value,
+                respuesta: document.getElementById('pqrs-respuesta').value
+            });
+            UI.hideLoading(); UI.closeModal('modal-pqrs');
+            UI.toast('PQRS actualizada', 'success'); loadAllPQRS();
+        } catch (e) { UI.hideLoading(); UI.toast(e.message, 'error'); }
+    }
+
+    async function loadStages() {
+        const container = document.getElementById('stages-admin-list');
+        try {
+            const res = await API.stages.all();
+            container.innerHTML = res.data.map(s => `
+                <div class="card">
+                    <div class="card-body">
+                        <h3 style="color:var(--primary);">${s.orden}. ${s.nombre}</h3>
+                        <p style="color:var(--gray);margin:0.5rem 0;">${s.descripcion || 'Sin descripción'}</p>
+                        <p style="font-size:0.85rem;"><strong>Lotes:</strong> ${s.num_lotes}</p>
+                        <p style="font-size:0.85rem;"><strong>Periodo:</strong> ${s.fecha_inicio ? UI.date(s.fecha_inicio) : 'N/A'} - ${s.fecha_fin ? UI.date(s.fecha_fin) : 'N/A'}</p>
+                        <button class="btn btn-sm btn-outline" style="margin-top:1rem;" onclick="editStage(${JSON.stringify(s).replace(/"/g,'&quot;')})">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {}
+    }
+
+    function openStageModal() {
+        document.getElementById('stage-id').value = '';
+        document.getElementById('stage-form').reset();
+        UI.openModal('modal-stage');
+    }
+
+    function editStage(s) {
+        document.getElementById('stage-id').value = s.id;
+        document.getElementById('stage-nombre').value = s.nombre;
+        document.getElementById('stage-descripcion').value = s.descripcion || '';
+        document.getElementById('stage-orden').value = s.orden;
+        document.getElementById('stage-inicio').value = s.fecha_inicio ? s.fecha_inicio.split('T')[0] : '';
+        document.getElementById('stage-fin').value = s.fecha_fin ? s.fecha_fin.split('T')[0] : '';
+        UI.openModal('modal-stage');
+    }
+
+    async function saveStage() {
+        const id = document.getElementById('stage-id').value;
+        const data = {
+            nombre: document.getElementById('stage-nombre').value,
+            descripcion: document.getElementById('stage-descripcion').value,
+            orden: parseInt(document.getElementById('stage-orden').value),
+            fecha_inicio: document.getElementById('stage-inicio').value || null,
+            fecha_fin: document.getElementById('stage-fin').value || null,
+            activo: true
+        };
+        UI.showLoading();
+        try {
+            if (id) await API.stages.update(id, data);
+            else await API.stages.create(data);
+            UI.hideLoading(); UI.closeModal('modal-stage');
+            UI.toast('Etapa guardada', 'success'); loadStages();
+        } catch (e) { UI.hideLoading(); UI.toast(e.message, 'error'); }
+    }
+
+    // Cargar dashboard al inicio
+    loadDashboard();
+</script>
+</body>
+</html>
