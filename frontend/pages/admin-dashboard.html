@@ -273,8 +273,15 @@
     };
 
     window.showSection = function(name) {
+        // Ocultar todas las secciones
         document.querySelectorAll('[id^="section-"]').forEach(s => s.style.display = 'none');
-        document.getElementById('section-' + name).style.display = 'block';
+        // Mostrar la sección seleccionada
+        const target = document.getElementById('section-' + name);
+        if (target) target.style.display = 'block';
+        // ✅ Actualizar estado activo en el sidebar
+        document.querySelectorAll('.sidebar-nav-item a').forEach(a => a.classList.remove('active'));
+        const activeLink = document.querySelector(`.sidebar-nav-item a[onclick*="'${name}'"]`);
+        if (activeLink) activeLink.classList.add('active');
         closeSidebar();
         const loaders = { dashboard: loadDashboard, lots: loadLots, users: loadUsers, purchases: loadPurchases, payments: loadAllPayments, pqrs: loadAllPQRS, stages: loadStages };
         if (loaders[name]) loaders[name]();
@@ -315,11 +322,21 @@
                     <small style="color:var(--gray)">${p.cliente_nombre}</small>
                 </div>`).join('');
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error('Error loadDashboard:', e);
+            ['s-clientes','s-disponibles','s-compras','s-recaudado','s-pqrs'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.textContent = '-';
+            });
+            const tbody = document.getElementById('recent-payments-body');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--gray);">Sin datos disponibles</td></tr>';
+            const pqrsDiv = document.getElementById('pending-pqrs');
+            if (pqrsDiv) pqrsDiv.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>Sin conexión al servidor</h3></div>';
+        }
     }
 
     async function loadLots() {
         const tbody = document.getElementById('lots-table-body');
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray);"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
         try {
             const [lotsRes, stagesRes] = await Promise.all([API.lots.getAll(), API.stages.all()]);
             // Cargar etapas en select del modal
@@ -327,7 +344,7 @@
             sel.innerHTML = '<option value="">Sin etapa</option>' + stagesRes.data.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('');
             
             if (!lotsRes.data.length) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray);">No hay lotes</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray);">No hay lotes registrados. Crea el primero con el botón + Nuevo Lote</td></tr>';
                 return;
             }
             tbody.innerHTML = lotsRes.data.map(l => `<tr>
@@ -343,7 +360,10 @@
                     <button class="btn btn-sm btn-danger" onclick="deleteLot(${l.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`).join('');
-        } catch (e) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error al cargar</td></tr>'; }
+        } catch (e) {
+            console.error('Error loadLots:', e);
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> Error al cargar lotes: ${e.message}</td></tr>`;
+        }
     }
 
     window.openLotModal = function(lot = null) {
@@ -402,8 +422,13 @@
 
     async function loadUsers() {
         const tbody = document.getElementById('users-table-body');
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray);"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
         try {
             const res = await API.users.all();
+            if (!res.data.length) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--gray);">No hay clientes registrados</td></tr>';
+                return;
+            }
             tbody.innerHTML = res.data.map(u => `<tr>
                 <td>${u.id}</td>
                 <td><strong>${u.nombre} ${u.apellido}</strong></td>
@@ -418,7 +443,10 @@
                     </button>
                 </td>
             </tr>`).join('');
-        } catch (e) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error</td></tr>'; }
+        } catch (e) {
+            console.error('Error loadUsers:', e);
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:2rem;color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> Error al cargar clientes: ${e.message}</td></tr>`;
+        }
     }
 
     window.toggleUser = async function(id) {
@@ -430,8 +458,13 @@
 
     async function loadPurchases() {
         const tbody = document.getElementById('purchases-table-body');
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--gray);"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
         try {
             const res = await API.purchases.all();
+            if (!res.data.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--gray);">No hay compras registradas</td></tr>';
+                return;
+            }
             tbody.innerHTML = res.data.map(c => `<tr>
                 <td>${c.id}</td>
                 <td>${c.cliente_nombre} ${c.cliente_apellido}</td>
@@ -443,13 +476,21 @@
                 <td>${UI.statusBadge(c.estado)}</td>
                 <td>${UI.date(c.fecha_compra)}</td>
             </tr>`).join('');
-        } catch (e) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:red;">Error</td></tr>'; }
+        } catch (e) {
+            console.error('Error loadPurchases:', e);
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:2rem;color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> Error al cargar compras: ${e.message}</td></tr>`;
+        }
     }
 
     async function loadAllPayments() {
         const tbody = document.getElementById('all-payments-body');
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--gray);"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
         try {
             const res = await API.payments.all();
+            if (!res.data.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--gray);">No hay pagos registrados</td></tr>';
+                return;
+            }
             tbody.innerHTML = res.data.map(p => `<tr>
                 <td>${p.id}</td>
                 <td>${p.cliente_nombre} ${p.cliente_apellido}</td>
@@ -461,15 +502,23 @@
                 <td>${UI.date(p.fecha_pago)}</td>
                 <td><button class="btn btn-sm btn-outline" onclick="API.payments.downloadReceipt(${p.id})" title="PDF"><i class="fas fa-file-pdf"></i></button></td>
             </tr>`).join('');
-        } catch (e) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:red;">Error</td></tr>'; }
+        } catch (e) {
+            console.error('Error loadAllPayments:', e);
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:2rem;color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> Error al cargar pagos: ${e.message}</td></tr>`;
+        }
     }
 
     window.loadAllPQRS = async function() {
         const tbody = document.getElementById('pqrs-table-body');
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--gray);"><i class="fas fa-spinner fa-spin"></i> Cargando...</td></tr>';
         const estado = document.getElementById('pqrs-filter-estado')?.value || '';
         const tipo = document.getElementById('pqrs-filter-tipo')?.value || '';
         try {
             const res = await API.pqrs.all({ estado, tipo });
+            if (!res.data.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--gray);">No hay PQRS' + (estado || tipo ? ' con ese filtro' : '') + '</td></tr>';
+                return;
+            }
             tbody.innerHTML = res.data.map(p => `<tr>
                 <td>${p.id}</td>
                 <td>${p.cliente_nombre}</td>
@@ -478,8 +527,11 @@
                 <td>${UI.statusBadge(p.estado)}</td>
                 <td>${UI.date(p.created_at)}</td>
                 <td><button class="btn btn-sm btn-outline" onclick="openPQRSModal(${JSON.stringify(p).replace(/"/g,'&quot;')})"><i class="fas fa-reply"></i> Responder</button></td>
-            </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--gray);">No hay PQRS</td></tr>';
-        } catch (e) {}
+            </tr>`).join('');
+        } catch (e) {
+            console.error('Error loadAllPQRS:', e);
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:#dc3545;"><i class="fas fa-exclamation-triangle"></i> Error al cargar PQRS: ${e.message}</td></tr>`;
+        }
     }
 
     window.openPQRSModal = function(p) {
@@ -511,8 +563,13 @@
 
     async function loadStages() {
         const container = document.getElementById('stages-admin-list');
+        container.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--gray);"><i class="fas fa-spinner fa-spin fa-2x"></i><p style="margin-top:1rem;">Cargando etapas...</p></div>';
         try {
             const res = await API.stages.all();
+            if (!res.data.length) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><h3>No hay etapas registradas</h3><p>Crea la primera etapa con el botón + Nueva Etapa</p></div>';
+                return;
+            }
             container.innerHTML = res.data.map(s => `
                 <div class="card">
                     <div class="card-body">
@@ -526,7 +583,10 @@
                     </div>
                 </div>
             `).join('');
-        } catch (e) {}
+        } catch (e) {
+            console.error('Error loadStages:', e);
+            container.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Error al cargar etapas</h3><p>${e.message}</p></div>`;
+        }
     }
 
     window.openStageModal = function() {
